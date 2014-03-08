@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.ArrayList;
 import java.util.Random;
 //import java.lang.*;
 
@@ -32,7 +31,6 @@ public class TestClass extends JFrame implements WindowListener{
         createZone(2);
         DeicstraArea tempA = DeicstraArea.getInstance();  //вся площадь
         tempA.makeArea(this.area);
-        ArrayList<Point> tempAL;  //массив точек от начала до конца
 
         //region Задание начальных и конечных точек
         CustomCell StartPoint = tempA.getCell((int)Places.STARTPOINT.getX(),(int) Places.STARTPOINT.getY());
@@ -40,51 +38,12 @@ public class TestClass extends JFrame implements WindowListener{
         CustomCell PointB = tempA.getCell((int)Places.POINTB.getX(),(int) Places.POINTB.getY());
         CustomCell PointC = tempA.getCell((int)Places.POINTC.getX(),(int) Places.POINTC.getY());
         StartPoint.setColor(Color.CYAN);
-        PointA.setColor(Color.red);
-        PointB.setColor(Color.red);
-        PointC.setColor(Color.red);
+        PointA.setColor(Color.BLACK);
+        PointB.setColor(Color.BLACK);
+        PointC.setColor(Color.BLACK);
         //endregion
 
-        //region Нахождение пути и его покраска
-        /*
-        try {
 
-            tempAL = tempA.findWay(StartPoint.getPosition(), PointA.getPosition());
-            tempAL = tempA.optimizeWay(tempAL);
-            for (Point point : tempAL){
-                tempA.getCell(point.x, point.y).setColor(Color.GREEN);
-            }
-        } catch (NoWayException ex) {
-            JOptionPane.showMessageDialog(this
-                    ,"Путь 1 не найден!","Внимание"
-                    ,JOptionPane.INFORMATION_MESSAGE);
-        }
-
-        try {
-             //второй путь
-            tempAL = tempA.findWay(StartPoint.getPosition(), PointB.getPosition());
-            tempAL = tempA.optimizeWay(tempAL);  // ходит по диагонали (не вверх в сторону)
-            for (Point point : tempAL){
-                tempA.getCell(point.x, point.y).setColor(Color.YELLOW);
-            }
-        } catch (NoWayException ex) {
-            JOptionPane.showMessageDialog(this
-                    ,"Путь 2 не найден!","Внимание"
-                    ,JOptionPane.INFORMATION_MESSAGE);
-        }
-        try {
-            //третий путь
-            tempAL = tempA.findWay(StartPoint.getPosition(), PointC.getPosition());
-            tempAL = tempA.optimizeWay(tempAL);
-            for (Point point : tempAL){
-                tempA.getCell(point.x, point.y).setColor(Color.BLUE);
-            }
-        } catch (NoWayException ex) {
-            JOptionPane.showMessageDialog(this
-                    ,"Путь 3 не найден!","Внимание"
-                    ,JOptionPane.INFORMATION_MESSAGE);
-        }     */
-        //endregion
 
 //
 
@@ -145,6 +104,10 @@ public class TestClass extends JFrame implements WindowListener{
 
     private final int width = 256;
     private final int heigth = 256;
+
+    public int[][] getArea() {
+        return area;
+    }
 
     private int[][] area = new int[width][heigth];
 }

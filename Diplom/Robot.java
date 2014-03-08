@@ -2,6 +2,7 @@ package Diplom;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 public abstract class Robot implements Runnable
 {
@@ -189,13 +190,7 @@ public abstract class Robot implements Runnable
         ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
          // скорость (точнее время езды до пункта назначения)
         // по смыслу тут надо еще сделать createZone на каждую точку, потом тред слип, и обычная  точка
-        for (Point point : path){
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.RED);
-            Core.repainting.repaint();
-            //Thread.sleep(path.size()*10);
-            Thread.sleep(10);
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.GREEN);
-        }
+        paintPath(path);
         setCurrentPoint(endpoint);
         setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
         Generator.countOfCompleteOrders++;
@@ -209,13 +204,7 @@ public abstract class Robot implements Runnable
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
         ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint); // ложь!
-        for (Point point : path){
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.BLACK);
-            Core.repainting.repaint();
-            //Thread.sleep(path.size()*10);
-            Thread.sleep(10);
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.CYAN);
-        }
+        paintPath(path);
         System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
         setCurrentPoint(getStoragePoint());
     }
@@ -226,5 +215,39 @@ public abstract class Robot implements Runnable
         Generator.getInstance().getOrderQueue().remove(0);  //  забираем топ очереди
         getMyOrders().add(order);
         setFree(false);
+    }
+
+    //region Colors
+    enum Colors{
+        ;
+        private static ArrayList<Color> VALUES = new ArrayList<Color>();
+        static {
+            VALUES.add(Color.red);
+            VALUES.add(Color.blue);
+            VALUES.add(Color.CYAN);
+            VALUES.add(Color.DARK_GRAY);
+            VALUES.add(Color.ORANGE);
+            VALUES.add(Color.YELLOW);
+
+        }
+        private static final int SIZE = VALUES.size();
+        private static final Random RANDOM = new Random();
+
+        public static Color randomColor()  {
+            return VALUES.get(RANDOM.nextInt(SIZE));
+        }
+    }
+    //endregion
+    public void paintPath(ArrayList<Point> path) throws InterruptedException {
+        Color one = Colors.randomColor();
+        Color two = Colors.randomColor();
+        for (Point point : path){
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(one);
+            Core.repainting.repaint();
+            Core.repainting.getArea()[point.x][point.y]=2;
+            Thread.sleep(10);
+            Core.repainting.getArea()[point.x][point.y]=1;
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
+        }
     }
 }
