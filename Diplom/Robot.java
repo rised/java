@@ -14,6 +14,7 @@ public abstract class Robot implements Runnable
     public class RobotExecutionA implements RobotExecutionType
     {    /* Робот просматривает всю очередь, и выбирает себе наиболее подходящий по весу - грузовой берет более тяжелый, легковой берет более легкий.
           Если тяжелых не будет - то грузовой не возьмет ничего.
+          запускать с GeneratorA
     */
 
         @Override
@@ -23,12 +24,12 @@ public abstract class Robot implements Runnable
             {
                 if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && type.equals("Грузовой"))
                 {
-                    pickFromTopQueue(order);
+                    pickOrderFromTopQueue(order);
                     break;
                 }
                 else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && type.equals("Легковой"))
                 {
-                    pickFromTopQueue(order);
+                    pickOrderFromTopQueue(order);
                     break;
                 }
             }
@@ -39,8 +40,20 @@ public abstract class Robot implements Runnable
     {
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
-        {
-           //To change body of implemented methods use File | Settings | File Templates.
+        {   //Оптимизация-1 Роботы берут из очереди несколько заказов для одного получателя
+            for (Order order : queue) {
+
+            }
+        }
+    }
+    public class RobotExecutionС implements RobotExecutionType
+    {
+        @Override
+        public void pickOrderByQueue(ArrayList<Order> queue)
+        {   //Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
+            for (Order order : queue) {
+
+            }
         }
     }
     //endregion
@@ -93,10 +106,6 @@ public abstract class Robot implements Runnable
     {
         return myOrders;
     }
-    /*public Point getStartPoint()
-    {
-        return StoragePoint;
-    }      */
     private String getType(){
         return type;
     }
@@ -127,7 +136,7 @@ public abstract class Robot implements Runnable
             ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
             //region Робот свободен, взятие заказа
             if(isFree())
-            { // System.out.println(String.format("%s Робот %s готов",getType(),getID()));//
+            { // одновременно доступ к очереди имеет только один робот
                 synchronized (queue)
                 {
                 if (!queue.isEmpty() && getCurrentPoint().equals(getStoragePoint()))
@@ -166,11 +175,7 @@ public abstract class Robot implements Runnable
             {   if (!getCurrentPoint().equals(getStoragePoint()))
                 simpleMove(getStoragePoint());
             }
-            catch (NoWayException e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            catch (InterruptedException e)
+            catch (Exception e)
             {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -180,7 +185,7 @@ public abstract class Robot implements Runnable
     private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException
     {
         if (endpoint ==null )   return;
-        System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), getMyOrders().get(0).getDestinationPoint()));
+        System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
         ArrayList<Point> path = DeicstraArea.getInstance().findWay(StoragePoint,endpoint);
         Thread.sleep(path.size()*10); // скорость (точнее время езды до пункта назначения)
         // по смыслу тут надо еще сделать createZone на каждую точку, потом тред слип, и обычная  точка
@@ -190,7 +195,7 @@ public abstract class Robot implements Runnable
         setCurrentPoint(endpoint);
         setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
         Generator.countOfCompleteOrders++;
-        System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s, стало ресурсов %s", getType(), getID(), getMyOrders().get(0).getID(), getMyOrders().get(0).getDestinationPoint(), getCAPACITY()));
+        System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s, стало ресурсов %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint()), getCAPACITY()));
         getMyOrders().remove(0);
         setFree(true);
         setEndPoint(getStoragePoint());
@@ -204,7 +209,7 @@ public abstract class Robot implements Runnable
         System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
         setCurrentPoint(getStoragePoint());
     }
-    private void pickFromTopQueue(Order order){
+    private void pickOrderFromTopQueue(Order order){
         setEndPoint(order.getDestinationPoint()); //добавить установка дестинейшна (EndPoint List) если берем несколько заказов
         setCapacity(getCAPACITY() - order.getWeight());
         System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s",getType(),getID(),order.getID(),order.getPriority(),getCAPACITY()));
