@@ -69,6 +69,7 @@ public class CustomCell {
         int y = g.getClipBounds().y + 20;
         g.setColor(this.Color);
         g.fillRect(x+getX()*2, y+getY()*2, 2, 2);
+
     }
 
     public String toString(){

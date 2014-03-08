@@ -186,11 +186,15 @@ public abstract class Robot implements Runnable
     {
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
-        ArrayList<Point> path = DeicstraArea.getInstance().findWay(StoragePoint,endpoint);
-        Thread.sleep(path.size()*10); // скорость (точнее время езды до пункта назначения)
+        ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
+         // скорость (точнее время езды до пункта назначения)
         // по смыслу тут надо еще сделать createZone на каждую точку, потом тред слип, и обычная  точка
         for (Point point : path){
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.ORANGE);
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.RED);
+            Core.repainting.repaint();
+            //Thread.sleep(path.size()*10);
+            Thread.sleep(10);
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.GREEN);
         }
         setCurrentPoint(endpoint);
         setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
@@ -204,8 +208,14 @@ public abstract class Robot implements Runnable
     {
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
-        ArrayList<Point> path = DeicstraArea.getInstance().findWay(CurrentPoint,endpoint);
-        Thread.sleep(path.size()*10);
+        ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint); // ложь!
+        for (Point point : path){
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.BLACK);
+            Core.repainting.repaint();
+            //Thread.sleep(path.size()*10);
+            Thread.sleep(10);
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(Color.CYAN);
+        }
         System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
         setCurrentPoint(getStoragePoint());
     }

@@ -24,7 +24,8 @@ public class TestClass extends JFrame implements WindowListener{
             public void paintComponent(Graphics g){
                 DeicstraArea.getInstance().paint(g);
             }
-        };
+        }  ;
+
 
         getContentPane().add(panel1);
         createArea();
@@ -45,6 +46,7 @@ public class TestClass extends JFrame implements WindowListener{
         //endregion
 
         //region Нахождение пути и его покраска
+        /*
         try {
 
             tempAL = tempA.findWay(StartPoint.getPosition(), PointA.getPosition());
@@ -81,7 +83,7 @@ public class TestClass extends JFrame implements WindowListener{
             JOptionPane.showMessageDialog(this
                     ,"Путь 3 не найден!","Внимание"
                     ,JOptionPane.INFORMATION_MESSAGE);
-        }
+        }     */
         //endregion
 
 //

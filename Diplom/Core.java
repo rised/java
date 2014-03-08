@@ -7,9 +7,10 @@ public class Core
 {
     public static boolean isStopped = false;
     private static ArrayList<Thread> robots = new ArrayList<Thread>();
+    public static TestClass repainting;
     public static void main(String []args) throws InterruptedException
     {
-        new TestClass();  //подключаем модуль отрисовки формы и АОП
+       repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
         Thread robot1 = new Thread(new LightRobot(1));
         Thread robot2 = new Thread(new CargoRobot(2));
         Thread robot3 = new Thread(new LightRobot(3));
@@ -22,7 +23,7 @@ public class Core
         robots.add(robot2);
         robots.add(robot3);
 
-        Thread.sleep(10000);   //общее время работы программы
+        Thread.sleep(30000);   //общее время работы программы
         isStopped=true;
         System.out.println("Остановка модели...");
         System.out.println(String.format("Выполнено заказов %s", Generator.countOfCompleteOrders));
