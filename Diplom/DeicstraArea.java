@@ -23,7 +23,7 @@ public class DeicstraArea {
      * без вызова этого метода работа с данным класом
      * не имеет смысла
      * @param Массив передаеться в формате area[x][y]
-     * Отрицательные значения стоимости расцениваються
+     * zonecost=2 расцениваються
      * как непроходимые клетки
      */
     public void makeArea(int [][] area){      //рисуем площадь weight X height
@@ -62,7 +62,7 @@ public class DeicstraArea {
      * @param cell - клетка в которой находиться герой
      */
     ArrayList getEnvironment(CustomCell cell){
-        return getEnvironment(cell, ENVIROMENT_MODEL_CROSS);
+        return getEnvironment(cell, ENVIROMENT_MODEL_SNOWFLAKE);  //ЗДЕСЬ И НИЖЕ ЗАДАЕМ ПРЕСЛОВУТУЮ МОДЕЛЬ
     }
 
     /** Метод возвращает список состоящий из клеток Дейкстры
@@ -73,7 +73,7 @@ public class DeicstraArea {
      * карты состоящий из клеток класса DeicstraCell
      */
     private ArrayList getEnvironment(DeicstraCell cell, ArrayList <DeicstraCell> area){
-        return getEnvironment(cell, area, ENVIROMENT_MODEL_CROSS);
+        return getEnvironment(cell, area, ENVIROMENT_MODEL_SNOWFLAKE);
     }
 
     /** Метод возвращает список состоящий из клеток
@@ -88,7 +88,7 @@ public class DeicstraArea {
     ArrayList getEnvironment(CustomCell cell, int enviromentModel) {
         int x = cell.getX();
         int y = cell.getY();
-        if ((x >= this.width)|| (y >= this.heigth)) return new ArrayList();
+        if ((x >= this.width) || (y >= this.heigth)) return new ArrayList();
         ArrayList tempAL = new ArrayList();
 
 //Up
@@ -151,30 +151,12 @@ public class DeicstraArea {
         }
         return tempAL;
     }
-
-    /** Метод возвращает координаты переданной клетки
-     */
-    public Point getPosition(CustomCell cell) {
-        return cell.getPosition();
-    }
-
     /** Метод возвращает список состоящий из ПРОХОДИМЫХ клеток
      * на которые может шагнуть герой
      * в соответствии с переданной моделью (крест,снежинка)
      * из переданной клетки
      * cell - клетка в которой находиться герой
      */
-    public ArrayList getCleanEnvironment(CustomCell cell){
-        ArrayList tempAL = this.getEnvironment(cell);
-        ArrayList outAL = new ArrayList();
-        Iterator tempI = tempAL.iterator();
-        CustomCell tempCC;
-        while( tempI.hasNext()) {
-            tempCC = (CustomCell)tempI.next();
-            if (tempCC.isPassable()) outAL.add(tempCC);
-        }
-        return outAL;
-    }
     /** Метод возвращает список состоящий из НЕПОСЕЩЕННЫХ клеток Дейкстры
      * на которые может шагнуть герой
      * в соответствии с переданной моделью (крест,снежинка)

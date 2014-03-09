@@ -68,6 +68,7 @@ public abstract class Robot implements Runnable
     private Point EndPoint;
     private Point CurrentPoint=StoragePoint;
     private ArrayList<Order> myOrders = new ArrayList<Order>();
+    private ArrayList<Point> path;
 
     public Robot(int ID, int CAPACITY, String type){   //сделать ENUM для типов
         this.ID=ID;
@@ -182,14 +183,15 @@ public abstract class Robot implements Runnable
             }
             //endregion
         }
+        Core.finish++;
     }
     private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException
     {
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
-        ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
-         // скорость (точнее время езды до пункта назначения)
-        // по смыслу тут надо еще сделать createZone на каждую точку, потом тред слип, и обычная  точка
+        path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
+        DeicstraArea.getInstance().optimizeWay(path);
+        System.out.println(path.size());
         paintPath(path);
         setCurrentPoint(endpoint);
         setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
@@ -203,7 +205,9 @@ public abstract class Robot implements Runnable
     {
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
-        ArrayList<Point> path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint); // ложь!
+        path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
+        DeicstraArea.getInstance().optimizeWay(path);
+        System.out.println(path.size());
         paintPath(path);
         System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
         setCurrentPoint(getStoragePoint());
@@ -225,9 +229,10 @@ public abstract class Robot implements Runnable
             VALUES.add(Color.red);
             VALUES.add(Color.blue);
             VALUES.add(Color.CYAN);
-            VALUES.add(Color.DARK_GRAY);
             VALUES.add(Color.ORANGE);
             VALUES.add(Color.YELLOW);
+            VALUES.add(Color.MAGENTA);
+            VALUES.add(Color.PINK);
 
         }
         private static final int SIZE = VALUES.size();
@@ -237,15 +242,23 @@ public abstract class Robot implements Runnable
             return VALUES.get(RANDOM.nextInt(SIZE));
         }
     }
+
     //endregion
     public void paintPath(ArrayList<Point> path) throws InterruptedException {
         Color one = Colors.randomColor();
         Color two = Colors.randomColor();
         for (Point point : path){
+            if (Core.repainting.getArea()[point.x][point.y]==2){
+                System.out.println(String.format("Потенциальное столкновение. Робот %s ждет",getID()));
+                //while(Core.repainting.getArea()[point.x][point.y]==2){}
+                Thread.sleep(30);
+                System.out.println(String.format("Робот %s продолжает движение",getID()));
+                Generator.PotentialCollisions++;
+                }
             DeicstraArea.getInstance().getCell(point.x, point.y).setColor(one);
             Core.repainting.repaint();
             Core.repainting.getArea()[point.x][point.y]=2;
-            Thread.sleep(10);
+            Thread.sleep(30);
             Core.repainting.getArea()[point.x][point.y]=1;
             DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
         }

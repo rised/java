@@ -6,28 +6,32 @@ import java.util.ArrayList;
 public class Core
 {
     public static boolean isStopped = false;
-    private static ArrayList<Thread> robots = new ArrayList<Thread>();
+    public static ArrayList<Robot> robots = new ArrayList<Robot>();
     public static TestClass repainting;
+    public static int finish=0;
     public static void main(String []args) throws InterruptedException
     {
-       repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
-        Thread robot1 = new Thread(new LightRobot(1));
-        Thread robot2 = new Thread(new CargoRobot(2));
-        Thread robot3 = new Thread(new LightRobot(3));
-        Thread coordinator = new Thread(Generator.getInstance());
+        repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
+        LightRobot lightRobot1 = new LightRobot(1);
+        CargoRobot cargoRobot1 = new CargoRobot(2);
+        LightRobot lightRobot3 = new LightRobot(3);
+        Thread robot1 = new Thread(lightRobot1);
+        Thread robot2 = new Thread(cargoRobot1);
+        Thread robot3 = new Thread(lightRobot3);
+        Thread generator = new Thread(Generator.getInstance());
         robot1.start();
         robot2.start();
         robot3.start();
-        coordinator.start();
-        robots.add(robot1);
-        robots.add(robot2);
-        robots.add(robot3);
+        generator.start();
+        robots.add(lightRobot1);
+        robots.add(cargoRobot1);
+        robots.add(lightRobot3);
 
-        Thread.sleep(30000);   //общее время работы программы
+        Thread.sleep(20000);   //общее время работы программы
         isStopped=true;
+        while(Core.finish!=3){} //какого то хуя не работает!!!!
         System.out.println("Остановка модели...");
-        System.out.println(String.format("Выполнено заказов %s", Generator.countOfCompleteOrders));
-
+        System.out.println(String.format("Выполнено заказов %s, потенциальных столкновений %s", Generator.countOfCompleteOrders, Generator.PotentialCollisions));
     }
     public static class LightRobot extends Robot{
         final static int MAX_CAPACITY = 50;

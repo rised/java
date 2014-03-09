@@ -10,6 +10,8 @@ public class Generator implements Runnable
     private static final Generator ourInstance = new Generator();
     private volatile ArrayList<Order> orderQueue = new ArrayList<Order>();
     public static int countOfCompleteOrders;
+    public static int PotentialCollisions;
+
     private GeneratorType EXECtype = new GeneratorA();   // здесь задаем тип генератора, который будем использовать
 
     public static Generator getInstance()
