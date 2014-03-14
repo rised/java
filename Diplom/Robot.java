@@ -17,18 +17,17 @@ public abstract class Robot implements Runnable
           Если тяжелых не будет - то грузовой не возьмет ничего.
           запускать с GeneratorA
     */
-
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
         {
             for (Order order : queue)
             {
-                if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && type.equals("Грузовой"))
+                if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой"))
                 {
                     pickOrderFromTopQueue(order);
                     break;
                 }
-                else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && type.equals("Легковой"))
+                else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой"))
                 {
                     pickOrderFromTopQueue(order);
                     break;
@@ -47,13 +46,23 @@ public abstract class Robot implements Runnable
             }
         }
     }
-    public class RobotExecutionС implements RobotExecutionType
+    public class RobotExecutionС implements RobotExecutionType  //робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
     {
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
+            // запускать с GeneratorA
         {   //Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
             for (Order order : queue) {
+                if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой"))
+                {
+                    pickOrderFromTopQueue(order);
 
+                }
+                else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой"))
+                {
+                    pickOrderFromTopQueue(order);
+
+                }
             }
         }
     }
@@ -191,7 +200,6 @@ public abstract class Robot implements Runnable
         System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
         path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
         DeicstraArea.getInstance().optimizeWay(path);
-        System.out.println(path.size());
         paintPath(path);
         setCurrentPoint(endpoint);
         setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
@@ -207,7 +215,6 @@ public abstract class Robot implements Runnable
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
         path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
         DeicstraArea.getInstance().optimizeWay(path);
-        System.out.println(path.size());
         paintPath(path);
         System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
         setCurrentPoint(getStoragePoint());
@@ -217,7 +224,7 @@ public abstract class Robot implements Runnable
         setCapacity(getCAPACITY() - order.getWeight());
         System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s",getType(),getID(),order.getID(),order.getPriority(),getCAPACITY()));
         Generator.getInstance().getOrderQueue().remove(0);  //  забираем топ очереди
-        getMyOrders().add(order);
+        getMyOrders().add(order);    //суем в массив своих заказов
         setFree(false);
     }
 

@@ -9,9 +9,9 @@ public class Core
     public static ArrayList<Robot> robots = new ArrayList<Robot>();
     public static TestClass repainting;
     public static int finish=0;
-    public static void main(String []args) throws InterruptedException
-    {
+    public static void main(String []args) throws InterruptedException, NoWayException {
         repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
+        //new TSP();
         LightRobot lightRobot1 = new LightRobot(1);
         CargoRobot cargoRobot1 = new CargoRobot(2);
         LightRobot lightRobot3 = new LightRobot(3);
@@ -26,10 +26,9 @@ public class Core
         robots.add(lightRobot1);
         robots.add(cargoRobot1);
         robots.add(lightRobot3);
-
-        Thread.sleep(20000);   //общее время работы программы
+        Thread.sleep(30000);   //общее время работы программы
         isStopped=true;
-        while(Core.finish!=3){} //какого то хуя не работает!!!!
+        //while(Core.finish!=3){} //какого то хуя не работает!!!!
         System.out.println("Остановка модели...");
         System.out.println(String.format("Выполнено заказов %s, потенциальных столкновений %s", Generator.countOfCompleteOrders, Generator.PotentialCollisions));
     }

@@ -10,12 +10,13 @@ public enum Places
 {;
 
     private static final int heigth=256;
-    private static final int weigth=256;
+    private static final int width =256;
     public static final Point STARTPOINT = DeicstraArea.getInstance().getCell(2, heigth - 2).getPosition();
-    public static final Point POINTA = DeicstraArea.getInstance().getCell(weigth - 40, 2).getPosition();
-    public static final Point POINTB = DeicstraArea.getInstance().getCell(weigth-50,weigth-100).getPosition();
-    public static final Point POINTC = DeicstraArea.getInstance().getCell(weigth-150,heigth-200).getPosition();
+    public static final Point POINTA = DeicstraArea.getInstance().getCell(width - 40, 2).getPosition();
+    public static final Point POINTB = DeicstraArea.getInstance().getCell(width -50, width -100).getPosition();
+    public static final Point POINTC = DeicstraArea.getInstance().getCell(width -150,heigth-200).getPosition();
     public static final HashMap<Point,String> pointStringHashMap = new HashMap<Point,String>();
+
 
     private static final List<Point> VALUES = new ArrayList<Point>();
     static{
