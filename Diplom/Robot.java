@@ -2,6 +2,7 @@ package Diplom;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 public abstract class Robot implements Runnable
@@ -46,29 +47,24 @@ public abstract class Robot implements Runnable
             }
         }
     }
-    public class RobotExecutionС implements RobotExecutionType  //робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
+    public class RobotExecutionС implements RobotExecutionType
     {
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
             // запускать с GeneratorA
         {   //Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
-            for (Order order : queue) {
-                if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой"))
-                {
-                    pickOrderFromTopQueue(order);
-
-                }
-                else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой"))
-                {
-                    pickOrderFromTopQueue(order);
-
+            //робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
+            Iterator<Order> iterator = queue.iterator();
+            for (int i=0;i<queue.size();i++){
+                if (getCAPACITY()>=queue.get(i).getWeight()){
+                    pickOrderFromTopQueue(queue.get(i));
                 }
             }
         }
     }
     //endregion
 
-    private final RobotExecutionType EXECtype = new RobotExecutionA(); // здесь задаем тип исполнения
+    private final RobotExecutionType EXECtype = new RobotExecutionС(); // здесь задаем тип исполнения
     private final int ID;
     private final String type;
     private final Point StoragePoint = DeicstraArea.getInstance().getCell((int)Places.STARTPOINT.getX(),(int)Places.STARTPOINT.getY()).getPosition();
@@ -145,7 +141,7 @@ public abstract class Robot implements Runnable
         while(!Core.isStopped)
         {
             ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
-            //region Робот свободен, взятие заказа
+            //region Если робот свободен и на находится на складе, то взять заказ
             if(isFree())
             { // одновременно доступ к очереди имеет только один робот
                 synchronized (queue)
@@ -155,14 +151,9 @@ public abstract class Robot implements Runnable
                         try
                         {
                             Thread.sleep(1000); // задержка на взятие заказа
+                            EXECtype.pickOrderByQueue(queue);
                         }
-                        catch (InterruptedException ignore)
-                        {}
-                            try
-                            {
-                               EXECtype.pickOrderByQueue(queue);
-                            }
-                         catch (NullPointerException ignore){}
+                        catch (Exception ignore){/*NOP*/}
                     }
                 }
             }
@@ -172,14 +163,8 @@ public abstract class Robot implements Runnable
             {
                 moveToDestinationWithOrder(EndPoint);
             }
-            catch (NoWayException e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+            catch (Exception e)
+            { }
             //endregion
             //region Едет пустой домой
             try

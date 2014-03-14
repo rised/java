@@ -11,7 +11,7 @@ public class Core
     public static int finish=0;
     public static void main(String []args) throws InterruptedException, NoWayException {
         repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
-        //new TSP();
+        //new TSP(); //модуль решения задачи коммивояжера
         LightRobot lightRobot1 = new LightRobot(1);
         CargoRobot cargoRobot1 = new CargoRobot(2);
         LightRobot lightRobot3 = new LightRobot(3);
@@ -19,16 +19,16 @@ public class Core
         Thread robot2 = new Thread(cargoRobot1);
         Thread robot3 = new Thread(lightRobot3);
         Thread generator = new Thread(Generator.getInstance());
+        robots.add(lightRobot1);
+        robots.add(cargoRobot1);
+        robots.add(lightRobot3);
         robot1.start();
         robot2.start();
         robot3.start();
         generator.start();
-        robots.add(lightRobot1);
-        robots.add(cargoRobot1);
-        robots.add(lightRobot3);
         Thread.sleep(30000);   //общее время работы программы
         isStopped=true;
-        //while(Core.finish!=3){} //какого то хуя не работает!!!!
+        //while(Core.finish!=3){} //не работает!!!!
         System.out.println("Остановка модели...");
         System.out.println(String.format("Выполнено заказов %s, потенциальных столкновений %s", Generator.countOfCompleteOrders, Generator.PotentialCollisions));
     }
