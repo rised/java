@@ -2,7 +2,7 @@ package Diplom;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Random;
 
 public abstract class Robot implements Runnable
@@ -54,7 +54,6 @@ public abstract class Robot implements Runnable
             // запускать с GeneratorA
         {   //Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
             //робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
-            Iterator<Order> iterator = queue.iterator();
             for (int i=0;i<queue.size();i++){
                 if (getCAPACITY()>=queue.get(i).getWeight()){
                     pickOrderFromTopQueue(queue.get(i));
@@ -182,6 +181,7 @@ public abstract class Robot implements Runnable
     private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException
     {
         if (endpoint ==null )   return;
+        ArrayList<Point> TSPpoints = uniquePTSforTSP();
         System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
         path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
         DeicstraArea.getInstance().optimizeWay(path);
@@ -207,7 +207,7 @@ public abstract class Robot implements Runnable
     private void pickOrderFromTopQueue(Order order){
         setEndPoint(order.getDestinationPoint()); //добавить установка дестинейшна (EndPoint List) если берем несколько заказов
         setCapacity(getCAPACITY() - order.getWeight());
-        System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s",getType(),getID(),order.getID(),order.getPriority(),getCAPACITY()));
+        System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s", getType(), getID(), order.getID(), order.getPriority(), getCAPACITY()));
         Generator.getInstance().getOrderQueue().remove(0);  //  забираем топ очереди
         getMyOrders().add(order);    //суем в массив своих заказов
         setFree(false);
@@ -255,4 +255,21 @@ public abstract class Robot implements Runnable
             DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
         }
     }
+    public ArrayList<Point> uniquePTSforTSP(){
+        //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммифояжера
+        ArrayList<Point> points = new ArrayList<Point>();
+        for (int i = 0; i < myOrders.size(); i++) {
+            points.add(myOrders.get(i).getDestinationPoint());
+        }
+        HashSet<Point> set = new HashSet<Point>();
+        for (int i=0;i<points.size();i++)
+        {
+        set.add(points.get(i));
+        }
+        ArrayList<Point> TSPpoints = new ArrayList<Point>();
+        TSPpoints.addAll(set);
+        System.out.println(set.size());   //сколько уникальных точек в списке заказов
+        return TSPpoints;
+    }
+
 }

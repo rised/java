@@ -12,7 +12,7 @@ public class Generator implements Runnable
     public static int countOfCompleteOrders;
     public static int PotentialCollisions;
 
-    private GeneratorType EXECtype = new GeneratorA();   // здесь задаем тип генератора, который будем использовать
+    private GeneratorType EXECtype = new GeneratorC();   // здесь задаем тип генератора, который будем использовать
 
     public static Generator getInstance()
     {
@@ -37,7 +37,7 @@ public class Generator implements Runnable
             {
                 //large count of orders
                 Point randompoint = Places.randomPlace();
-                Order order = new Order(randompoint,Order.Sizes.randomOrder(),(int)(Math.random()*Priorities.countOfPriorities+1));  //генерим заказы
+                Order order = new Order(randompoint,Order.Sizes.randomSize(),(int)(Math.random()*Priorities.countOfPriorities+1));  //генерим заказы
                 orderQueue.add(0,order);
                 Collections.sort(orderQueue,new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s",order.getID(),Places.pointStringHashMap.get(randompoint),order.getWeight(),order.getPriority()));
@@ -55,11 +55,31 @@ public class Generator implements Runnable
             try
             {
                 //small count of orders
-                Order order = new Order(Places.randomPlace(),Order.Sizes.randomOrder(),(int)(Math.random()*Priorities.countOfPriorities+1));  //генерим заказы
+                Order order = new Order(Places.randomPlace(),Order.Sizes.randomSize(),(int)(Math.random()*Priorities.countOfPriorities+1));  //генерим заказы
                 orderQueue.add(0,order);
                 Collections.sort(orderQueue,new SortedByPriority());
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s",order.getID(),order.getDestinationPoint(),order.getWeight(),order.getPriority()));
                 Thread.sleep((int)(Math.random()*10000));      //время через которое поступают заказы
+            }
+            catch (InterruptedException ignore)    /*NOP*/
+            {
+            }
+        }
+    }
+    public class GeneratorC implements GeneratorType{
+        @Override
+        //заказы по 10 весом
+        public void generateOrders()
+        {
+            try
+            {
+                //large count of orders
+                Point randompoint = Places.randomPlace();
+                Order order = new Order(randompoint,10,(int)(Math.random()*Priorities.countOfPriorities+1));  //генерим заказы
+                orderQueue.add(0,order);
+                Collections.sort(orderQueue,new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
+                System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s",order.getID(),Places.pointStringHashMap.get(randompoint),order.getWeight(),order.getPriority()));
+                Thread.sleep((int)(Math.random()*1000));      //время через которое поступают заказы
             }
             catch (InterruptedException ignore)    /*NOP*/
             {

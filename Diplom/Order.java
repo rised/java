@@ -66,7 +66,7 @@ public class Order
         private static final int SIZE = VALUES.size();
         private static final Random RANDOM = new Random();
 
-        public static Integer randomOrder()  {
+        public static Integer randomSize()  {
             return VALUES.get(RANDOM.nextInt(SIZE));
         }
     }

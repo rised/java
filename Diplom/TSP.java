@@ -19,11 +19,12 @@ public class TSP {
         int[][] dist = { { 0, pathAB.size(), pathAC.size(), pathASTART.size()}, { pathAB.size(), 0, pathBC.size(), pathBSTART.size()}, { pathAC.size(), pathBC.size(), 0, pathCSTART.size()}, { pathASTART.size(), pathBSTART.size(), pathCSTART.size(),0}};
         System.out.println(getShortestTSPPath(dist));
 
+
     }
 
         public static int getShortestTSPPath(int[][] dist) {
             int n = dist.length;
-            int[][] dp = new int[1 << n][n];
+            int[][] dp = new int[1 << n][n];    //destination point?
             for (int[] d : dp)
                 Arrays.fill(d, Integer.MAX_VALUE / 2);
             dp[1][0] = 0;
