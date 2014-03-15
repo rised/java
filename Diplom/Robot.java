@@ -1,6 +1,7 @@
 package Diplom;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -157,13 +158,22 @@ public abstract class Robot implements Runnable
                 }
             }
             //endregion
+            //region Блок коммиовяжера(можно отключить )
+            /*ArrayList<Point> TSPpoints = uniquePTSforTSP();
+            try {
+                new TSPNearestNeighbour(TSPpoints); //подключение модуля комивояжера
+            } catch (Exception e) {
+                System.out.println(e.getMessage());;  //To change body of catch statement use File | Settings | File Templates.
+            }          */
+            //endregion
             //region Едет с заказом
             try
             {
                 moveToDestinationWithOrder(EndPoint);
             }
             catch (Exception e)
-            { }
+            {
+                System.out.println("moveToDest"+e.getMessage()); }
             //endregion
             //region Едет пустой домой
             try
@@ -172,16 +182,15 @@ public abstract class Robot implements Runnable
             }
             catch (Exception e)
             {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                System.out.println("simplemove:" + e.getMessage());
             }
             //endregion
         }
         Core.finish++;
     }
-    private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException
-    {
+    private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException, IOException {
+        //единственная точка назначения
         if (endpoint ==null )   return;
-        ArrayList<Point> TSPpoints = uniquePTSforTSP();
         System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
         path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
         DeicstraArea.getInstance().optimizeWay(path);
@@ -195,7 +204,7 @@ public abstract class Robot implements Runnable
         setEndPoint(getStoragePoint());
     }
     private void simpleMove(Point endpoint) throws NoWayException, InterruptedException
-    {
+    {   //движение к STARTPOINT
         if (endpoint ==null )   return;
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
         path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
@@ -268,7 +277,7 @@ public abstract class Robot implements Runnable
         }
         ArrayList<Point> TSPpoints = new ArrayList<Point>();
         TSPpoints.addAll(set);
-        System.out.println(set.size());   //сколько уникальных точек в списке заказов
+        // System.out.println(set.size());   //сколько уникальных точек в списке заказов
         return TSPpoints;
     }
 
