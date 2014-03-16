@@ -168,18 +168,19 @@ public abstract class Robot implements Runnable
                         catch (Exception ignore){/*NOP*/}
                     }
                 }
+                //endregion
+                //region Блок коммиовяжера(можно отключить )
+                ArrayList<Point> TSPpoints = uniquePTSforTSP();  // получаем точки которые нужно посетить
+                try {
+                    TSPNN TSP = new TSPNN(TSPpoints);
+                    multipath=TSP.getPoints();
+                    //подключение модуля комивояжера
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+                //endregion
+
             }
-            //endregion
-            //region Блок коммиовяжера(можно отключить )
-            ArrayList<Point> TSPpoints = uniquePTSforTSP();
-            try {
-                TSPNN TSP = new TSPNN(TSPpoints);
-                multipath=TSP.getPoints();
-                 //подключение модуля комивояжера
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-            //endregion
             //region Едет с заказом
             try
             {
@@ -188,7 +189,8 @@ public abstract class Robot implements Runnable
             }
             catch (Exception e)
             {
-                System.out.println("moveToDest"+e.getMessage()); }
+                System.out.println("moveToDest"+e.getMessage());
+            }
             //endregion
             //region Едет пустой домой
             try
@@ -220,24 +222,27 @@ public abstract class Robot implements Runnable
     }
     private void moveToDestinationWithOrder(ArrayList<Point> multipath) throws NoWayException, InterruptedException {
        if(multipath ==null) return;
-       System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getOrders().get(0).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint())));
        for (int i=0; i<multipath.size();i++)
        {
-           path = DeicstraArea.getInstance().findWay(multipath.get(i),CurrentPoint);
+           EndPoint=multipath.get(i);
+           System.out.println(String.format("%s Робот %s c заказами поехал в точку назначения %s", getType(), getID(), Places.pointStringHashMap.get(EndPoint)));
+           path = DeicstraArea.getInstance().findWay(EndPoint,CurrentPoint);
            DeicstraArea.getInstance().optimizeWay(path);
            paintPath(path);
-           setCurrentPoint(multipath.get(i));
-           System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s", getType(), getID(), getOrders().get(i).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint())));
+           setCurrentPoint(EndPoint);
+           System.out.println(String.format("%s Робот %s c заказоми приехал в точку назначения %s", getType(), getID(), Places.pointStringHashMap.get(EndPoint)));
            for (int j=0;j< orders.size();j++)
-           {
-               if(CurrentPoint.equals(orders.get(i).getDestinationPoint()))
+           {   //смотрим какие заказы надо отдать
+               if(CurrentPoint.equals(orders.get(j).getDestinationPoint()))
                {
-                   setCapacity(getCAPACITY() + getOrders().get(i).getWeight());
-                   System.out.println(String.format("Отдал заказ %s, стало ресурсов %s", orders.get(i).getID(),getCAPACITY()));
-                   orders.remove(i);
+                   setCapacity(getCAPACITY() + getOrders().get(j).getWeight());
+                   System.out.println(String.format("Отдал заказ %s, стало ресурсов %s", orders.get(j).getID(),getCAPACITY()));
+                   orders.remove(j);
+                   j--;
                    Generator.countOfCompleteOrders++;
                }
            }
+           if (i!=(multipath.size()-1))
            System.out.println(String.format("%s Робот %s едет в следующую точку", getType(), getID()));
 
        }
@@ -291,7 +296,8 @@ public abstract class Robot implements Runnable
     public void paintPath(ArrayList<Point> path) throws InterruptedException, NoWayException {
         Color one = Colors.randomColor();
         //Color two = Colors.randomColor();
-        for (Point point : path){
+         for (Point point : path){
+            /*    Столкновения, из за кривости стен пока убрал
             if (Core.repainting.getArea()[point.x][point.y]==2){
                 DeicstraArea.getInstance().findWay(point,EndPoint);
                 System.out.println(String.format("Потенциальное столкновение. Робот %s ждет",getID()));
@@ -299,7 +305,7 @@ public abstract class Robot implements Runnable
                 Thread.sleep(40);
                 System.out.println(String.format("Робот %s продолжает движение",getID()));
                 Generator.PotentialCollisions++;
-                }
+                }         */
             setCurrentPoint(point);
             DeicstraArea.getInstance().getCell(point.x, point.y).setColor(one);
             Core.repainting.repaint();
@@ -308,6 +314,24 @@ public abstract class Robot implements Runnable
             Core.repainting.getArea()[point.x][point.y]=1;   // освободилась
             //DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
         }
+        /*try{
+        for (int i =0;i<path.size();i++)
+        {
+            setCurrentPoint(path.get(i));
+            if (Core.repainting.getArea()[path.get(i+1).x][path.get(i+1).y]==2)
+            {
+                 paintPath(DeicstraArea.getInstance().findWay(CurrentPoint,EndPoint));
+                 break;
+            }
+            DeicstraArea.getInstance().getCell(path.get(i).x, path.get(i).y).setColor(one);
+            Core.repainting.repaint();
+            Core.repainting.getArea()[path.get(i).x][path.get(i).y]=2;    //клетка стала занятой
+            Thread.sleep(30);
+            Core.repainting.getArea()[path.get(i).x][path.get(i).y]=1;   // освободилась
+        }      }
+        catch (Exception e){
+            System.out.println("Paintpath косяк" + e.getMessage());
+        }   */ //тут сквозь стены не ездит, но ошибка блеать в алгортме поиска пути!!!
     }
     public ArrayList<Point> uniquePTSforTSP(){
         //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммивояжера
