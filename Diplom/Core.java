@@ -1,6 +1,7 @@
 package Diplom;
 
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class Core
@@ -12,9 +13,9 @@ public class Core
     public static void main(String []args) throws InterruptedException, NoWayException {
         repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
         //new oldtsp(); //модуль решения задачи коммивояжера
-        LightRobot lightRobot1 = new LightRobot(1);
-        CargoRobot cargoRobot1 = new CargoRobot(2);
-        LightRobot lightRobot3 = new LightRobot(3);
+        LightRobot lightRobot1 = new LightRobot(1, Color.GREEN);
+        CargoRobot cargoRobot1 = new CargoRobot(2, Color.YELLOW);
+        LightRobot lightRobot3 = new LightRobot(3, Color.BLUE);
         Thread robot1 = new Thread(lightRobot1);
         Thread robot2 = new Thread(cargoRobot1);
         Thread robot3 = new Thread(lightRobot3);
@@ -34,16 +35,16 @@ public class Core
     }
     public static class LightRobot extends Robot{
         final static int MAX_CAPACITY = 50;
-        public LightRobot(int ID)
+        public LightRobot(int ID, Color color)
         {
-            super(ID, LightRobot.MAX_CAPACITY, "Легковой");
+            super(ID, LightRobot.MAX_CAPACITY, "Легковой", color);
         }
     }
     public static class CargoRobot extends Robot{
         final static int MAX_CAPACITY=100;
-        public CargoRobot(int ID)
+        public CargoRobot(int ID, Color color)
         {
-            super(ID, CargoRobot.MAX_CAPACITY, "Грузовой");
+            super(ID, CargoRobot.MAX_CAPACITY, "Грузовой", color);
         }
     }
 

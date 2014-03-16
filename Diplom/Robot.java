@@ -52,9 +52,11 @@ public abstract class Robot implements Runnable
     {
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
-            // запускать с GeneratorA
-        {   //Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
-            //робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
+            /* запускать с GeneratorA
+            *Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
+            *робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
+            * CAREFUL!!! роботы здесь почему то могут взять одинаковые заказы :(*/
+        {
             for (int i=0;i<queue.size();i++){
                 if (getCAPACITY()>=queue.get(i).getWeight()){
                     pickOrderFromTopQueue(queue.get(i));
@@ -79,14 +81,16 @@ public abstract class Robot implements Runnable
     private boolean free=true;
     private Point EndPoint;
     private Point CurrentPoint=StoragePoint;
-    private ArrayList<Order> myOrders = new ArrayList<Order>();
+    private ArrayList<Order> orders = new ArrayList<Order>();
     private ArrayList<Point> path;
     private ArrayList<Point> multipath;
+    private Color color;
 
-    public Robot(int ID, int CAPACITY, String type){   //сделать ENUM для типов
+    public Robot(int ID, int CAPACITY, String type, Color color){   //сделать ENUM для типов
         this.ID=ID;
         this.capacity = CAPACITY;
         this.type=type;
+        this.color=color;
     }
     //region Сеттеры
     private void setCapacity(int capacity)
@@ -117,9 +121,9 @@ public abstract class Robot implements Runnable
     {
         return StoragePoint;
     }
-    private ArrayList<Order> getMyOrders()
+    private ArrayList<Order> getOrders()
     {
-        return myOrders;
+        return orders;
     }
     private String getType(){
         return type;
@@ -179,7 +183,8 @@ public abstract class Robot implements Runnable
             //region Едет с заказом
             try
             {
-                moveToDestinationWithOrder(EndPoint);
+                //moveToDestinationWithOrder(EndPoint);
+                moveToDestinationWithOrder(multipath);
             }
             catch (Exception e)
             {
@@ -201,20 +206,44 @@ public abstract class Robot implements Runnable
     private void moveToDestinationWithOrder(Point endpoint) throws NoWayException, InterruptedException, IOException {
         //единственная точка назначения
         if (endpoint ==null )   return;
-        System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint())));
+        System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getOrders().get(0).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint())));
         path = DeicstraArea.getInstance().findWay(endpoint,StoragePoint);// тут на самом деле переменные наоброт
         DeicstraArea.getInstance().optimizeWay(path);
         paintPath(path);
         setCurrentPoint(endpoint);
-        setCapacity(getCAPACITY() + getMyOrders().get(0).getWeight());
+        setCapacity(getCAPACITY() + getOrders().get(0).getWeight());
         Generator.countOfCompleteOrders++;
-        System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s, стало ресурсов %s", getType(), getID(), getMyOrders().get(0).getID(), Places.pointStringHashMap.get(getMyOrders().get(0).getDestinationPoint()), getCAPACITY()));
-        getMyOrders().remove(0);
+        System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s, стало ресурсов %s", getType(), getID(), getOrders().get(0).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint()), getCAPACITY()));
+        getOrders().remove(0);
         setFree(true);
         setEndPoint(getStoragePoint());
     }
-    private void moveToDestinationWithOrder(ArrayList<Point> multipath)
-    {
+    private void moveToDestinationWithOrder(ArrayList<Point> multipath) throws NoWayException, InterruptedException {
+       if(multipath ==null) return;
+       System.out.println(String.format("%s Робот %s c заказом %s поехал в точку назначения %s", getType(), getID(), getOrders().get(0).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint())));
+       for (int i=0; i<multipath.size();i++)
+       {
+           path = DeicstraArea.getInstance().findWay(multipath.get(i),CurrentPoint);
+           DeicstraArea.getInstance().optimizeWay(path);
+           paintPath(path);
+           setCurrentPoint(multipath.get(i));
+           System.out.println(String.format("%s Робот %s c заказом %s приехал в точку назначения %s", getType(), getID(), getOrders().get(i).getID(), Places.pointStringHashMap.get(getOrders().get(0).getDestinationPoint())));
+           for (int j=0;j< orders.size();j++)
+           {
+               if(CurrentPoint.equals(orders.get(i).getDestinationPoint()))
+               {
+                   setCapacity(getCAPACITY() + getOrders().get(i).getWeight());
+                   System.out.println(String.format("Отдал заказ %s, стало ресурсов %s", orders.get(i).getID(),getCAPACITY()));
+                   orders.remove(i);
+                   Generator.countOfCompleteOrders++;
+               }
+           }
+           System.out.println(String.format("%s Робот %s едет в следующую точку", getType(), getID()));
+
+       }
+       setFree(true);
+       setEndPoint(getStoragePoint());
+
 
     }
     private void simpleMove(Point endpoint) throws NoWayException, InterruptedException
@@ -232,7 +261,7 @@ public abstract class Robot implements Runnable
         setCapacity(getCAPACITY() - order.getWeight());
         System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s", getType(), getID(), order.getID(), order.getPriority(), getCAPACITY()));
         Generator.getInstance().getOrderQueue().remove(0);  //  забираем топ очереди
-        getMyOrders().add(order);    //суем в массив своих заказов
+        getOrders().add(order);    //суем в массив своих заказов
         setFree(false);
     }
 
@@ -259,30 +288,32 @@ public abstract class Robot implements Runnable
     }
 
     //endregion
-    public void paintPath(ArrayList<Point> path) throws InterruptedException {
+    public void paintPath(ArrayList<Point> path) throws InterruptedException, NoWayException {
         Color one = Colors.randomColor();
-        Color two = Colors.randomColor();
+        //Color two = Colors.randomColor();
         for (Point point : path){
             if (Core.repainting.getArea()[point.x][point.y]==2){
+                DeicstraArea.getInstance().findWay(point,EndPoint);
                 System.out.println(String.format("Потенциальное столкновение. Робот %s ждет",getID()));
                 //while(Core.repainting.getArea()[point.x][point.y]==2){}
-                Thread.sleep(30);
+                Thread.sleep(40);
                 System.out.println(String.format("Робот %s продолжает движение",getID()));
                 Generator.PotentialCollisions++;
                 }
+            setCurrentPoint(point);
             DeicstraArea.getInstance().getCell(point.x, point.y).setColor(one);
             Core.repainting.repaint();
-            Core.repainting.getArea()[point.x][point.y]=2;
+            Core.repainting.getArea()[point.x][point.y]=2;    //клетка стала занятой
             Thread.sleep(30);
-            Core.repainting.getArea()[point.x][point.y]=1;
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
+            Core.repainting.getArea()[point.x][point.y]=1;   // освободилась
+            //DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
         }
     }
     public ArrayList<Point> uniquePTSforTSP(){
         //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммивояжера
         ArrayList<Point> points = new ArrayList<Point>();
-        for (int i = 0; i < myOrders.size(); i++) {
-            points.add(myOrders.get(i).getDestinationPoint());
+        for (int i = 0; i < orders.size(); i++) {
+            points.add(orders.get(i).getDestinationPoint());
         }
         HashSet<Point> set = new HashSet<Point>();
         for (int i=0;i<points.size();i++)
