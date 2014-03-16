@@ -4,9 +4,9 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 //https://sites.google.com/site/indy256/algo/dynamic_tsp
-//здесь решается задача комивояжера
-public class TSP {
-    public TSP() throws NoWayException {
+//здесь решается задача комивояжера  NEAREST NEIGHBOUR
+public class oldtsp {
+    public oldtsp() throws NoWayException {
         ArrayList<Point> pathAB = DeicstraArea.getInstance().findWay(Places.POINTA,Places.POINTB);
         ArrayList<Point> pathAC = DeicstraArea.getInstance().findWay(Places.POINTA,Places.POINTC);
         ArrayList<Point> pathBC = DeicstraArea.getInstance().findWay(Places.POINTB,Places.POINTC);

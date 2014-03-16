@@ -11,7 +11,7 @@ public class Core
     public static int finish=0;
     public static void main(String []args) throws InterruptedException, NoWayException {
         repainting= new TestClass();  //подключаем модуль отрисовки формы и АОП
-        //new TSP(); //модуль решения задачи коммивояжера
+        //new oldtsp(); //модуль решения задачи коммивояжера
         LightRobot lightRobot1 = new LightRobot(1);
         CargoRobot cargoRobot1 = new CargoRobot(2);
         LightRobot lightRobot3 = new LightRobot(3);

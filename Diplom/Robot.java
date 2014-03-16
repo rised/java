@@ -64,6 +64,13 @@ public abstract class Robot implements Runnable
     }
     //endregion
 
+
+    /**
+    *
+    * @param path - кратчайший путь из всех точек, которые необходимо дойти из одной точки в другую
+    * @param multipath - список точек, которые нужно посетить роботу в случае если он взял больше одного заказа.
+    *
+     * */
     private final RobotExecutionType EXECtype = new RobotExecutionС(); // здесь задаем тип исполнения
     private final int ID;
     private final String type;
@@ -74,6 +81,7 @@ public abstract class Robot implements Runnable
     private Point CurrentPoint=StoragePoint;
     private ArrayList<Order> myOrders = new ArrayList<Order>();
     private ArrayList<Point> path;
+    private ArrayList<Point> multipath;
 
     public Robot(int ID, int CAPACITY, String type){   //сделать ENUM для типов
         this.ID=ID;
@@ -159,12 +167,14 @@ public abstract class Robot implements Runnable
             }
             //endregion
             //region Блок коммиовяжера(можно отключить )
-            /*ArrayList<Point> TSPpoints = uniquePTSforTSP();
+            ArrayList<Point> TSPpoints = uniquePTSforTSP();
             try {
-                new TSPNearestNeighbour(TSPpoints); //подключение модуля комивояжера
+                TSPNN TSP = new TSPNN(TSPpoints);
+                multipath=TSP.getPoints();
+                 //подключение модуля комивояжера
             } catch (Exception e) {
-                System.out.println(e.getMessage());;  //To change body of catch statement use File | Settings | File Templates.
-            }          */
+                System.out.println(e.getMessage());
+            }
             //endregion
             //region Едет с заказом
             try
@@ -202,6 +212,10 @@ public abstract class Robot implements Runnable
         getMyOrders().remove(0);
         setFree(true);
         setEndPoint(getStoragePoint());
+    }
+    private void moveToDestinationWithOrder(ArrayList<Point> multipath)
+    {
+
     }
     private void simpleMove(Point endpoint) throws NoWayException, InterruptedException
     {   //движение к STARTPOINT
@@ -265,7 +279,7 @@ public abstract class Robot implements Runnable
         }
     }
     public ArrayList<Point> uniquePTSforTSP(){
-        //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммифояжера
+        //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммивояжера
         ArrayList<Point> points = new ArrayList<Point>();
         for (int i = 0; i < myOrders.size(); i++) {
             points.add(myOrders.get(i).getDestinationPoint());
