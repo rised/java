@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Order
 {
-    //justify sex
+
     private int weight;
     private int priority;
     private static int totalOrderCount;
@@ -20,14 +20,6 @@ public class Order
         totalOrderCount++;
         this.ID=totalOrderCount;
     }
-    //region Сеттеры
-    public void setWeight(int weight)
-    {
-        this.weight = weight;
-    }
-
-
-    //endregion
     //region Геттеры
     public Point getDestinationPoint()
     {

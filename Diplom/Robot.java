@@ -38,16 +38,6 @@ public abstract class Robot implements Runnable
 
         }
     }
-    public class RobotExecutionB implements RobotExecutionType
-    {
-        @Override
-        public void pickOrderByQueue(ArrayList<Order> queue)
-        {   //Оптимизация-1 Роботы берут из очереди несколько заказов для одного получателя
-            for (Order order : queue) {
-
-            }
-        }
-    }
     public class RobotExecutionС implements RobotExecutionType
     {
         @Override
@@ -55,11 +45,12 @@ public abstract class Robot implements Runnable
             /* запускать с GeneratorA
             *Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
             *робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
-            * CAREFUL!!! роботы здесь почему то могут взять одинаковые заказы :(*/
+            */
         {
             for (int i=0;i<queue.size();i++){
                 if (getCAPACITY()>=queue.get(i).getWeight()){
                     pickOrderFromTopQueue(queue.get(i));
+                    i--;
                 }
             }
         }
@@ -78,19 +69,22 @@ public abstract class Robot implements Runnable
     private final String type;
     private final Point StoragePoint = DeicstraArea.getInstance().getCell((int)Places.STARTPOINT.getX(),(int)Places.STARTPOINT.getY()).getPosition();
     private int capacity;
+    private int energyRatePerMove;
+    private int energy;
     private boolean free=true;
+    private static  ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
     private Point EndPoint;
     private Point CurrentPoint=StoragePoint;
     private ArrayList<Order> orders = new ArrayList<Order>();
     private ArrayList<Point> path;
     private ArrayList<Point> multipath;
-    private Color color;
 
-    public Robot(int ID, int CAPACITY, String type, Color color){   //сделать ENUM для типов
+    public Robot(int ID, int CAPACITY, String type, int energyPerMove, int energy){
         this.ID=ID;
         this.capacity = CAPACITY;
         this.type=type;
-        this.color=color;
+        this.energy=energy;
+        this.energyRatePerMove =energyPerMove;
     }
     //region Сеттеры
     private void setCapacity(int capacity)
@@ -113,6 +107,10 @@ public abstract class Robot implements Runnable
     }
     //endregion
     //region Геттеры
+
+    public int getEnergy() {
+        return energy;
+    }
     private Point getCurrentPoint()
     {
         return CurrentPoint;
@@ -152,7 +150,7 @@ public abstract class Robot implements Runnable
     {
         while(!Core.isStopped)
         {
-            ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
+            //ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
             //region Если робот свободен и на находится на складе, то взять заказ
             if(isFree())
             { // одновременно доступ к очереди имеет только один робот
@@ -165,18 +163,21 @@ public abstract class Robot implements Runnable
                             Thread.sleep(1000); // задержка на взятие заказа
                             EXECtype.pickOrderByQueue(queue);
                         }
-                        catch (Exception ignore){/*NOP*/}
+                        catch (Exception e){
+                            System.out.println("pickorder" + e.getMessage());
+                        }
+
+                    //region Блок коммиовяжера(можно отключить )
+                    ArrayList<Point> TSPpoints = buildUniqueListByOrders();  // получаем точки которые нужно посетить
+                    try {
+                        TSPNN TSP = new TSPNN(TSPpoints);
+                        multipath=TSP.getPoints();
+                        //подключение модуля комивояжера
+                    } catch (Exception e) {
+                        System.out.println("TSPNN:" + e.getMessage());
                     }
-                }
-                //endregion
-                //region Блок коммиовяжера(можно отключить )
-                ArrayList<Point> TSPpoints = uniquePTSforTSP();  // получаем точки которые нужно посетить
-                try {
-                    TSPNN TSP = new TSPNN(TSPpoints);
-                    multipath=TSP.getPoints();
-                    //подключение модуля комивояжера
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    //endregion
+                    }
                 }
                 //endregion
 
@@ -195,7 +196,7 @@ public abstract class Robot implements Runnable
             //region Едет пустой домой
             try
             {   if (!getCurrentPoint().equals(getStoragePoint()))
-                simpleMove(getStoragePoint());
+                moveToStorage();
             }
             catch (Exception e)
             {
@@ -251,22 +252,21 @@ public abstract class Robot implements Runnable
 
 
     }
-    private void simpleMove(Point endpoint) throws NoWayException, InterruptedException
-    {   //движение к STARTPOINT
-        if (endpoint ==null )   return;
+    private void moveToStorage() throws NoWayException, InterruptedException
+    {
         System.out.println(String.format("%s Робот %s едет обратно на склад", getType(), getID()));
-        path = DeicstraArea.getInstance().findWay(endpoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
+        path = DeicstraArea.getInstance().findWay(StoragePoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
         DeicstraArea.getInstance().optimizeWay(path);
         paintPath(path);
-        System.out.println(String.format("%s Робот %s на складе", getType(), getID()));
+        System.out.println(String.format("%s Робот %s на складе, осталось энергиии %S", getType(), getID(),getEnergy()));
         setCurrentPoint(getStoragePoint());
     }
     private void pickOrderFromTopQueue(Order order){
-        setEndPoint(order.getDestinationPoint()); //добавить установка дестинейшна (EndPoint List) если берем несколько заказов
+        setEndPoint(order.getDestinationPoint());
         setCapacity(getCAPACITY() - order.getWeight());
         System.out.println(String.format("%s Робот %s взял заказ %s, приоритета %s, осталось ресурсов %s", getType(), getID(), order.getID(), order.getPriority(), getCAPACITY()));
-        Generator.getInstance().getOrderQueue().remove(0);  //  забираем топ очереди
-        getOrders().add(order);    //суем в массив своих заказов
+        Generator.getInstance().getOrderQueue().remove(0);
+        getOrders().add(order);
         setFree(false);
     }
 
@@ -294,10 +294,10 @@ public abstract class Robot implements Runnable
 
     //endregion
     public void paintPath(ArrayList<Point> path) throws InterruptedException, NoWayException {
-        Color one = Colors.randomColor();
-        //Color two = Colors.randomColor();
+        Color bodyColor = Colors.randomColor();
+        Color headColor = Colors.randomColor();   //начало змейки
          for (Point point : path){
-            /*    Столкновения, из за кривости стен пока убрал
+                //Столкновения
             if (Core.repainting.getArea()[point.x][point.y]==2){
                 DeicstraArea.getInstance().findWay(point,EndPoint);
                 System.out.println(String.format("Потенциальное столкновение. Робот %s ждет",getID()));
@@ -305,14 +305,15 @@ public abstract class Robot implements Runnable
                 Thread.sleep(40);
                 System.out.println(String.format("Робот %s продолжает движение",getID()));
                 Generator.PotentialCollisions++;
-                }         */
+                }
             setCurrentPoint(point);
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(one);
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
             Core.repainting.repaint();
             Core.repainting.getArea()[point.x][point.y]=2;    //клетка стала занятой
             Thread.sleep(30);
+            energy=getEnergy()- energyRatePerMove;
             Core.repainting.getArea()[point.x][point.y]=1;   // освободилась
-            //DeicstraArea.getInstance().getCell(point.x, point.y).setColor(two);
+            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
         }
         /*try{
         for (int i =0;i<path.size();i++)
@@ -323,7 +324,7 @@ public abstract class Robot implements Runnable
                  paintPath(DeicstraArea.getInstance().findWay(CurrentPoint,EndPoint));
                  break;
             }
-            DeicstraArea.getInstance().getCell(path.get(i).x, path.get(i).y).setColor(one);
+            DeicstraArea.getInstance().getCell(path.get(i).x, path.get(i).y).setColor(bodyColor);
             Core.repainting.repaint();
             Core.repainting.getArea()[path.get(i).x][path.get(i).y]=2;    //клетка стала занятой
             Thread.sleep(30);
@@ -333,19 +334,19 @@ public abstract class Robot implements Runnable
             System.out.println("Paintpath косяк" + e.getMessage());
         }   */ //тут сквозь стены не ездит, но ошибка блеать в алгортме поиска пути!!!
     }
-    public ArrayList<Point> uniquePTSforTSP(){
+    public ArrayList<Point> buildUniqueListByOrders(){
         //метод находит в списке заказов робота уникальные точки, которые необходимо посетить для задачи комммивояжера
         ArrayList<Point> points = new ArrayList<Point>();
         for (int i = 0; i < orders.size(); i++) {
             points.add(orders.get(i).getDestinationPoint());
         }
-        HashSet<Point> set = new HashSet<Point>();
+        HashSet<Point> hashSet = new HashSet<Point>();
         for (int i=0;i<points.size();i++)
         {
-        set.add(points.get(i));
+        hashSet.add(points.get(i));
         }
         ArrayList<Point> TSPpoints = new ArrayList<Point>();
-        TSPpoints.addAll(set);
+        TSPpoints.addAll(hashSet);
         // System.out.println(set.size());   //сколько уникальных точек в списке заказов
         return TSPpoints;
     }

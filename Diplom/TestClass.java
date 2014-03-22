@@ -9,7 +9,6 @@ import java.util.Random;
 
 public class TestClass extends JFrame implements WindowListener{
 
-    private JButton closeButton = new JButton("Close");
     private JPanel panel1;
 
     /** Creates a new instance of TestClass */
@@ -80,14 +79,15 @@ public class TestClass extends JFrame implements WindowListener{
         ForIJarea(15,40,15,150,zoneCost);
         ForIJarea(40,60,15,25,zoneCost);
         ForIJarea(60,125,25,50,zoneCost);
-        ForIJarea(100,230,100,120,zoneCost);
+        ForIJarea(100,130,100,120,zoneCost);
+        ForIJarea(180,230,100,120,zoneCost);
         ForIJarea(43,150,180,200,zoneCost);
         ForIJarea(230,250,180,200,zoneCost);
         ForIJarea(100,120,160,180,zoneCost);
         ForIJarea(100,120,120,140,zoneCost);
-        ForIJarea(20,100,220,256,zoneCost);
+        ForIJarea(20,100,230,256,zoneCost);
         ForIJarea(60,80,15,150,zoneCost);
-        ForIJarea(180,256,25,50,zoneCost);
+        ForIJarea(200,256,25,50,zoneCost);
     }
     public void ForIJarea(int xFrom, int xTo, int yFrom, int yTo, int zoneCost){
        //j высота, i ширина, начало координат лево верх
