@@ -7,18 +7,18 @@ import java.util.Comparator;
 
 public class Generator implements Runnable
 {
+    private final GeneratorType EXECtype = new GeneratorA();   // здесь задаем тип генератора, который будем использовать
+
     private static final Generator ourInstance = new Generator();
     private volatile ArrayList<Order> orderQueue = new ArrayList<Order>();
-    public static int countOfCompleteOrders;
-    public static int PotentialCollisions;
-
-    private GeneratorType EXECtype = new GeneratorA();   // здесь задаем тип генератора, который будем использовать
+    protected static int countOfCompleteOrders;
+    protected static int PotentialCollisions;
 
     public static Generator getInstance()
     {
         return ourInstance;
     }
-    public ArrayList<Order> getOrderQueue() {
+    public synchronized ArrayList<Order> getOrderQueue() {
         return orderQueue;
     }
     private Generator()

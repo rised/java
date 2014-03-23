@@ -8,6 +8,7 @@ import java.util.Random;
 
 public abstract class Robot implements Runnable
 {
+    private final RobotExecutionType EXECtype = new RobotExecutionC(); // здесь задаем тип исполнения
     //region Типы исполнения
 
     public interface RobotExecutionType
@@ -24,12 +25,12 @@ public abstract class Robot implements Runnable
         {
             for (Order order : queue)
             {
-                if (getCAPACITY()>order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой"))
+                if (getCAPACITY()>=order.getWeight() && order.getWeight()> Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой"))
                 {
                     pickOrderFromTopQueue(order);
                     break;
                 }
-                else if (getCAPACITY()>order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой"))
+                else if (getCAPACITY()>=order.getWeight() && order.getWeight()<=Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой"))
                 {
                     pickOrderFromTopQueue(order);
                     break;
@@ -38,7 +39,54 @@ public abstract class Robot implements Runnable
 
         }
     }
-    public class RobotExecutionС implements RobotExecutionType
+    public class RobotExecutionB implements RobotExecutionType
+    {
+        @Override
+        public void pickOrderByQueue(ArrayList<Order> queue)
+            /*FIFO+robottype*/
+        {
+
+            ArrayList<Robot> freeRobots = new ArrayList<Robot>();
+            System.out.println("Обзор свободных роботов на складе...");
+            for(Robot robot : Core.robots){
+                if (robot.isFree() && robot.getCurrentPoint().equals(getStoragePoint())){
+                freeRobots.add(robot);
+                System.out.println(String.format("Робот номер %s свободен",robot.getID())); }
+            }
+            if (freeRobots.size()==1){
+               // System.out.println(String.format("Свободен только я - номер %s",getID()));
+            for (int i=0;i<queue.size();i++){
+                if (getCAPACITY()>=queue.get(i).getWeight()){
+                    pickOrderFromTopQueue(queue.get(i));
+                    i--;
+                }
+            }
+            }
+            else {     //здесь исходный поток может управлять другим потоком
+
+                    for (int j=0;j<queue.size();j++){
+
+                        for(int i=0;i<freeRobots.size();i++)
+                        {
+                            if (freeRobots.get(i).getCAPACITY()>=queue.get(j).getWeight() && queue.get(j).getWeight()> Core.LightRobot.MAX_CAPACITY && freeRobots.get(i).getType().equals("Грузовой"))
+                            {
+                                freeRobots.get(i).pickOrderFromTopQueue(queue.get(j));
+                                j--;
+
+                            }
+                            else if (freeRobots.get(i).getCAPACITY()>=queue.get(j).getWeight() && queue.get(j).getWeight()<=Core.LightRobot.MAX_CAPACITY && freeRobots.get(i).getType().equals("Легковой"))
+                            {
+                                freeRobots.get(i).pickOrderFromTopQueue(queue.get(j));
+                                j--;
+                            }
+
+                    }
+                }
+            }
+
+        }
+    }
+    public class RobotExecutionC implements RobotExecutionType
     {
         @Override
         public void pickOrderByQueue(ArrayList<Order> queue)
@@ -64,7 +112,6 @@ public abstract class Robot implements Runnable
     * @param multipath - список точек, которые нужно посетить роботу в случае если он взял больше одного заказа.
     *
      * */
-    private final RobotExecutionType EXECtype = new RobotExecutionС(); // здесь задаем тип исполнения
     private final int ID;
     private final String type;
     private final Point StoragePoint = DeicstraArea.getInstance().getCell((int)Places.STARTPOINT.getX(),(int)Places.STARTPOINT.getY()).getPosition();
@@ -72,7 +119,7 @@ public abstract class Robot implements Runnable
     private int energyRatePerMove;
     private int energy;
     private boolean free=true;
-    private static  ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
+    private static volatile ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
     private Point EndPoint;
     private Point CurrentPoint=StoragePoint;
     private ArrayList<Order> orders = new ArrayList<Order>();
@@ -84,7 +131,7 @@ public abstract class Robot implements Runnable
         this.capacity = CAPACITY;
         this.type=type;
         this.energy=energy;
-        this.energyRatePerMove =energyPerMove;
+        this.energyRatePerMove = energyPerMove;
     }
     //region Сеттеры
     private void setCapacity(int capacity)
@@ -152,7 +199,7 @@ public abstract class Robot implements Runnable
         {
             //ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
             //region Если робот свободен и на находится на складе, то взять заказ
-            if(isFree())
+            if(isFree())   // в EXECB один поток может поменять состояние другого, поэтому это условие очень удачно работает здесь
             { // одновременно доступ к очереди имеет только один робот
                 synchronized (queue)
                 {
@@ -164,24 +211,17 @@ public abstract class Robot implements Runnable
                             EXECtype.pickOrderByQueue(queue);
                         }
                         catch (Exception e){
-                            System.out.println("pickorder" + e.getMessage());
+                            System.out.println("pickorder: " + e.getCause());
                         }
 
-                    //region Блок коммиовяжера(можно отключить )
-                    ArrayList<Point> TSPpoints = buildUniqueListByOrders();  // получаем точки которые нужно посетить
-                    try {
-                        TSPNN TSP = new TSPNN(TSPpoints);
-                        multipath=TSP.getPoints();
-                        //подключение модуля комивояжера
-                    } catch (Exception e) {
-                        System.out.println("TSPNN:" + e.getMessage());
                     }
-                    //endregion
-                    }
-                }
-                //endregion
 
+                }
             }
+
+            //endregion
+            createMultipathByTSPNN();
+            if (orders.size()!=0){
             //region Едет с заказом
             try
             {
@@ -203,6 +243,7 @@ public abstract class Robot implements Runnable
                 System.out.println("simplemove:" + e.getMessage());
             }
             //endregion
+            }
         }
         Core.finish++;
     }
@@ -237,7 +278,7 @@ public abstract class Robot implements Runnable
                if(CurrentPoint.equals(orders.get(j).getDestinationPoint()))
                {
                    setCapacity(getCAPACITY() + getOrders().get(j).getWeight());
-                   System.out.println(String.format("Отдал заказ %s, стало ресурсов %s", orders.get(j).getID(),getCAPACITY()));
+                   System.out.println(String.format("%s Робот %s в %s отдал заказ %s, стало ресурсов %s",getType(),getID(),Places.pointStringHashMap.get( orders.get(j).getDestinationPoint()), orders.get(j).getID(),getCAPACITY()));
                    orders.remove(j);
                    j--;
                    Generator.countOfCompleteOrders++;
@@ -258,7 +299,7 @@ public abstract class Robot implements Runnable
         path = DeicstraArea.getInstance().findWay(StoragePoint,CurrentPoint);  //точки стоят наоборот чтобы правильно рисовало
         DeicstraArea.getInstance().optimizeWay(path);
         paintPath(path);
-        System.out.println(String.format("%s Робот %s на складе, осталось энергиии %S", getType(), getID(),getEnergy()));
+        System.out.println(String.format("%s Робот %s на складе, осталось энергии %S", getType(), getID(),getEnergy()));
         setCurrentPoint(getStoragePoint());
     }
     private void pickOrderFromTopQueue(Order order){
@@ -349,6 +390,18 @@ public abstract class Robot implements Runnable
         TSPpoints.addAll(hashSet);
         // System.out.println(set.size());   //сколько уникальных точек в списке заказов
         return TSPpoints;
+    }
+    private void createMultipathByTSPNN(){
+        if (orders.size()>0)
+        {
+            ArrayList<Point> TSPpoints = buildUniqueListByOrders();  // получаем точки которые нужно посетить
+            try {
+                TSPNN TSP = new TSPNN(TSPpoints);
+                multipath=TSP.getPoints();
+            } catch (Exception e) {
+                System.out.println("TSPNN:" + e.getMessage());
+            }
+        }
     }
 
 }
