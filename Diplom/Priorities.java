@@ -1,16 +1,15 @@
 package Diplom;
 
-public enum Priorities
-{
-;
+public enum Priorities {
+    ;
     private final int priority;
-    public static int countOfPriorities=3;
-     Priorities(int priority){
-         this.priority=priority;
-     }
+    public static int countOfPriorities = 3;
 
-    public int getPriority()
-    {
+    Priorities(int priority) {
+        this.priority = priority;
+    }
+
+    public int getPriority() {
         return priority;
     }
 }

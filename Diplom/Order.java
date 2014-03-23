@@ -4,8 +4,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Order
-{
+public class Order {
 
     private int weight;
     private int priority;
@@ -13,52 +12,52 @@ public class Order
     private int ID;
     private double completetime;
     private Point DestinationPoint;
-    public Order (Point destinationPoint,int weight,int priority){
-        this.DestinationPoint=destinationPoint;
-        this.weight=weight;
-        this.priority=priority;
+
+    public Order(Point destinationPoint, int weight, int priority) {
+        this.DestinationPoint = destinationPoint;
+        this.weight = weight;
+        this.priority = priority;
         totalOrderCount++;
-        this.ID=totalOrderCount;
+        this.ID = totalOrderCount;
     }
+
     //region Геттеры
-    public Point getDestinationPoint()
-    {
+    public Point getDestinationPoint() {
         return DestinationPoint;
     }
 
-    public int getWeight()
-    {
+    public int getWeight() {
         return weight;
     }
 
-    public int getPriority()
-    {
+    public int getPriority() {
         return priority;
     }
 
-    public static int getTotalOrderCount()
-    {
+    public static int getTotalOrderCount() {
         return totalOrderCount;
     }
 
-    public int getID()
-    {
+    public int getID() {
         return ID;
     }
-    enum Sizes{
+
+    enum Sizes {
         ;
         private static ArrayList<Integer> VALUES = new ArrayList<Integer>();
+
         static {
 
-            for (int i=10; i<101;){
-             VALUES.add(i);
-            i+=10;
-                }
+            for (int i = 10; i < 101; ) {
+                VALUES.add(i);
+                i += 10;
+            }
         }
+
         private static final int SIZE = VALUES.size();
         private static final Random RANDOM = new Random();
 
-        public static Integer randomSize()  {
+        public static Integer randomSize() {
             return VALUES.get(RANDOM.nextInt(SIZE));
         }
     }
