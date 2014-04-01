@@ -29,9 +29,9 @@ public class TestClass extends JFrame implements WindowListener {
 
         getContentPane().add(panel1);
         createArea();
-        createZone(2);
+        createZone();
         DeicstraArea tempA = DeicstraArea.getInstance();  //вся площадь
-        tempA.makeArea(this.area);
+        tempA.makeArea(this.cellsCosts);
 
         //region Задание начальных и конечных точек
         CustomCell StartPoint = tempA.getCell((int) Places.STARTPOINT.getX(), (int) Places.STARTPOINT.getY());
@@ -76,26 +76,26 @@ public class TestClass extends JFrame implements WindowListener {
 
 
     //region Создание стен
-    public void createZone(int zoneCost) {    //задаем блоки непроходимых клеток
-        ForIJarea(15, 40, 15, 150, zoneCost);
-        ForIJarea(40, 60, 15, 25, zoneCost);
-        ForIJarea(60, 125, 25, 50, zoneCost);
-        ForIJarea(100, 130, 100, 120, zoneCost);
-        ForIJarea(180, 230, 100, 120, zoneCost);
-        ForIJarea(43, 150, 180, 200, zoneCost);
-        ForIJarea(230, 250, 180, 200, zoneCost);
-        ForIJarea(100, 120, 160, 180, zoneCost);
-        ForIJarea(100, 120, 120, 140, zoneCost);
-        ForIJarea(20, 100, 230, 256, zoneCost);
-        ForIJarea(60, 80, 15, 150, zoneCost);
-        ForIJarea(200, 256, 25, 50, zoneCost);
+    public void createZone() {    //задаем блоки непроходимых клеток
+        ForIJarea(15, 40, 15, 150);
+        ForIJarea(40, 60, 15, 25);
+        ForIJarea(60, 125, 25, 50);
+        ForIJarea(100, 130, 100, 120);
+        ForIJarea(180, 230, 100, 120);
+        ForIJarea(43, 150, 180, 200);
+        ForIJarea(230, 250, 180, 200);
+        ForIJarea(100, 120, 160, 180);
+        ForIJarea(100, 120, 120, 140);
+        ForIJarea(20, 100, 230, 256);
+        ForIJarea(60, 80, 15, 150);
+        ForIJarea(200, 256, 25, 50);
     }
 
-    public void ForIJarea(int xFrom, int xTo, int yFrom, int yTo, int zoneCost) {
+    public void ForIJarea(int xFrom, int xTo, int yFrom, int yTo) {
         //j высота, i ширина, начало координат лево верх
         for (int i = xFrom; i < xTo; i++)
             for (int j = yFrom; j < yTo; j++) {
-                this.area[i][j] = zoneCost;
+                this.cellsCosts[i][j] = 2;         //zonecost=2
             }
     }
     //endregion
@@ -104,8 +104,8 @@ public class TestClass extends JFrame implements WindowListener {
         Random rand = new Random();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < heigth; j++) {
-                this.area[i][j] = 1;
-                if (rand.nextInt(100) < 0) this.area[i][j] = -this.area[i][j];
+                this.cellsCosts[i][j] = 1;
+                if (rand.nextInt(100) < 0) this.cellsCosts[i][j] = -this.cellsCosts[i][j];
             }
         }
     }
@@ -113,10 +113,10 @@ public class TestClass extends JFrame implements WindowListener {
     private final int width = 256;
     private final int heigth = 256;
 
-    public int[][] getArea() {
-        return area;
+    public int[][] getCellsCosts() {
+        return cellsCosts;
     }
 
-    private int[][] area = new int[width][heigth];
+    private int[][] cellsCosts = new int[width][heigth];
 }
 

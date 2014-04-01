@@ -301,7 +301,7 @@ public class DeicstraArea {
         }
 //если граничных точек больше нет - то путь не найден
 // if (BarrierList.isEmpty()) System.err.println("No Way!");
-        NoWayException e = new NoWayException("Way can not be fined!");
+        NoWayException e = new NoWayException("Way can not be found!");
         throw e;
     }
 

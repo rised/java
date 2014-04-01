@@ -29,6 +29,10 @@ public class CustomCell {
 
     }
 
+    public void setCost(double cost) {
+        Cost = cost;
+    }
+
     public double Cost = 1.0;
 
     //Проходимость клетки

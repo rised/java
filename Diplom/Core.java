@@ -1,6 +1,7 @@
 package Diplom;
 
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class Core {
@@ -8,6 +9,7 @@ public class Core {
     public static ArrayList<Robot> robots = new ArrayList<Robot>();
     public static TestClass repainting;
     public static int finish = 0;
+    public static int mapVersionByWalls=0;
     private static final int numberOfRobots = 5;
 
     public static void main(String[] args) throws InterruptedException, NoWayException {
@@ -33,11 +35,37 @@ public class Core {
         robot3.start();
         //robot4.start();
         generator.start();
-        Thread.sleep(30000);   //общее время работы программы
+        makeUnforseenWalls();
+        Thread.sleep(20000);   //общее время работы программы
         isStopped = true;
         //while(Core.finish!=3){} //не работает!!!!
         System.out.println("Остановка модели...");
         System.out.println(String.format("Выполнено заказов %s, потенциальных столкновений %s", Generator.countOfCompleteOrders, Generator.PotentialCollisions));
+    }
+
+    private static void makeUnforseenWalls() throws InterruptedException {
+         int wallCount = 4;
+         int zoneCost = 2;
+        Thread.sleep(4500);
+        makeFromTo(160,180,140,192,2);
+        Thread.sleep(5000);
+        makeFromTo(140,160,90,130,2);
+        Thread.sleep(5000);
+        makeFromTo(160,180,140,192,1);
+        Thread.sleep(5000);
+        makeFromTo(140,160,90,130,1);
+
+    }
+    private static void makeFromTo(int xFrom, int xTo, int yFrom, int yTo,int zoneCost){
+        for (int i = xFrom; i < xTo; i++)
+            for (int j = yFrom; j < yTo; j++) {
+                if (zoneCost==2)
+                DeicstraArea.getInstance().getCell(i, j).setColor(Color.BLACK);
+                else
+                DeicstraArea.getInstance().getCell(i, j).setColor(Color.WHITE);
+                DeicstraArea.getInstance().getCell(i, j).setCost(zoneCost);
+            }
+        mapVersionByWalls++;
     }
 
     public static class LightRobot extends Robot {

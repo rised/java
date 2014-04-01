@@ -110,6 +110,7 @@ public abstract class Robot implements Runnable {
     private ArrayList<Order> orders = new ArrayList<Order>();
     private ArrayList<Point> path;
     private ArrayList<Point> multipath;
+    private int mapVersion=1;
 
     public Robot(int ID, int CAPACITY, String type, int energyPerMove, int energy) {
         this.ID = ID;
@@ -177,7 +178,7 @@ public abstract class Robot implements Runnable {
     @Override
     public void run() {
         while (!Core.isStopped) {
-            //ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
+
             //region Если робот свободен и на находится на складе, то взять заказ
             if (isFree())   // в EXECB один поток может поменять состояние другого, поэтому это условие очень удачно работает здесь
             { // одновременно доступ к очереди имеет только один робот
@@ -294,7 +295,8 @@ public abstract class Robot implements Runnable {
             VALUES.add(Color.ORANGE);
             VALUES.add(Color.YELLOW);
             VALUES.add(Color.MAGENTA);
-            VALUES.add(Color.PINK);
+            VALUES.add(new Color(27,88,24));
+            VALUES.add(new Color(48, 104, 144));
 
         }
 
@@ -309,44 +311,51 @@ public abstract class Robot implements Runnable {
     //endregion
     void paintPath(ArrayList<Point> path) throws InterruptedException, NoWayException {
         Color bodyColor = Colors.randomColor();
-        Color headColor = Colors.randomColor();   //начало змейки
+        Color headColor = Colors.randomColor();
         for (Point point : path) {
-            //Столкновения
-            if (Core.repainting.getArea()[point.x][point.y] == 2) {
-                DeicstraArea.getInstance().findWay(point, EndPoint);
-                System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
-                //while(Core.repainting.getArea()[point.x][point.y]==2){}
-                Thread.sleep(40);
-                System.out.println(String.format("Робот %s продолжает движение", getID()));
-                Generator.PotentialCollisions++;
+            if (Core.mapVersionByWalls < mapVersion) {
+                if (Core.repainting.getCellsCosts()[point.x][point.y] == 2) {
+                    System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
+                    Thread.sleep(40);
+                    System.out.println(String.format("Робот %s продолжает движение", getID()));
+                    Generator.PotentialCollisions++;
+                }
+                setCurrentPoint(point);
+                DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
+                Core.repainting.repaint();
+                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(2);    //клетка стала занятой
+                Thread.sleep(30);
+                energy = getEnergy() - energyRatePerMove;
+                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(1);   // освободилась
+                DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
             }
-            setCurrentPoint(point);
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
-            Core.repainting.repaint();
-            Core.repainting.getArea()[point.x][point.y] = 2;    //клетка стала занятой
-            Thread.sleep(30);
-            energy = getEnergy() - energyRatePerMove;
-            Core.repainting.getArea()[point.x][point.y] = 1;   // освободилась
-            DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
+            else  {
+                mapVersion++;
+                System.out.println("Реккурсия");
+                paintPath(DeicstraArea.getInstance().findWay(EndPoint,CurrentPoint));
+
+            break;
+            }
         }
         /*try{
         for (int i =0;i<path.size();i++)
         {
             setCurrentPoint(path.get(i));
-            if (Core.repainting.getArea()[path.get(i+1).x][path.get(i+1).y]==2)
+            if (Core.repainting.getCellsCosts()[path.get(i+1).x][path.get(i+1).y]==2)
             {
                  paintPath(DeicstraArea.getInstance().findWay(CurrentPoint,EndPoint));
                  break;
             }
             DeicstraArea.getInstance().getCell(path.get(i).x, path.get(i).y).setColor(bodyColor);
             Core.repainting.repaint();
-            Core.repainting.getArea()[path.get(i).x][path.get(i).y]=2;    //клетка стала занятой
+            Core.repainting.getCellsCosts()[path.get(i).x][path.get(i).y]=2;    //клетка стала занятой
             Thread.sleep(30);
-            Core.repainting.getArea()[path.get(i).x][path.get(i).y]=1;   // освободилась
+            Core.repainting.getCellsCosts()[path.get(i).x][path.get(i).y]=1;   // освободилась
         }      }
         catch (Exception e){
             System.out.println("Paintpath косяк" + e.getMessage());
         }   */ //тут сквозь стены не ездит, но ошибка блеать в алгортме поиска пути!!!
+
     }
 
     ArrayList<Point> buildUniqueListByOrders() {
