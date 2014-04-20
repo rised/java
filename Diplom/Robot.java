@@ -60,10 +60,12 @@ public abstract class Robot implements Runnable {
 
                     for (Robot freeRobot : freeRobots) {
                         if (freeRobot.getCAPACITY() >= queue.get(j).getWeight() && queue.get(j).getWeight() > Core.LightRobot.MAX_CAPACITY && freeRobot.getType().equals("Грузовой")) {
+                            System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ.", getID(), freeRobot.getID()));
                             freeRobot.pickOrderFromTopQueue(queue.get(j));
                             j--;
 
                         } else if (freeRobot.getCAPACITY() >= queue.get(j).getWeight() && queue.get(j).getWeight() <= Core.LightRobot.MAX_CAPACITY && freeRobot.getType().equals("Легковой")) {
+                            System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ.",getID(),freeRobot.getID()));
                             freeRobot.pickOrderFromTopQueue(queue.get(j));
                             j--;
                         }
@@ -111,6 +113,7 @@ public abstract class Robot implements Runnable {
     private ArrayList<Point> path;
     private ArrayList<Point> multipath;
     private int mapVersion=1;
+    private static int speed = 15;
 
     public Robot(int ID, int CAPACITY, String type, int energyPerMove, int energy) {
         this.ID = ID;
@@ -131,6 +134,15 @@ public abstract class Robot implements Runnable {
 
     private void setEndPoint(Point endPoint) {
         EndPoint = endPoint;
+    }
+
+    public static int getSpeed() {
+        return speed;
+    }
+
+    public static void setSpeed(int speed) {
+
+        Robot.speed = speed;
     }
 
     private void setCurrentPoint(Point currentPoint) {
@@ -298,6 +310,7 @@ public abstract class Robot implements Runnable {
             VALUES.add(new Color(27,88,24));
             VALUES.add(new Color(48, 104, 144));
 
+
         }
 
         private static final int SIZE = VALUES.size();
@@ -316,7 +329,7 @@ public abstract class Robot implements Runnable {
             if (Core.mapVersionByWalls < mapVersion) {
                 if (Core.repainting.getCellsCosts()[point.x][point.y] == 2) {
                     System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
-                    Thread.sleep(40);
+                    Thread.sleep((long)(speed/0.75));
                     System.out.println(String.format("Робот %s продолжает движение", getID()));
                     Generator.PotentialCollisions++;
                 }
@@ -324,14 +337,16 @@ public abstract class Robot implements Runnable {
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
                 Core.repainting.repaint();
                 DeicstraArea.getInstance().getCell(point.x, point.y).setCost(2);    //клетка стала занятой
-                Thread.sleep(30);
+                Core.repainting.getCellsCosts()[point.x][point.y] = 2;
+                Thread.sleep(speed);
                 energy = getEnergy() - energyRatePerMove;
                 DeicstraArea.getInstance().getCell(point.x, point.y).setCost(1);   // освободилась
+                Core.repainting.getCellsCosts()[point.x][point.y] = 1;
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
             }
             else  {
                 mapVersion++;
-                System.out.println("Реккурсия");
+                System.out.println("Зафиксировано непредвиденное препятсвие на маршруте следования...");
                 paintPath(DeicstraArea.getInstance().findWay(EndPoint,CurrentPoint));
 
             break;

@@ -33,13 +33,13 @@ public class Generator implements Runnable {
         @Override
         public void generateOrders() {
             try {
-                //large count of orders
+                //large number of orders
                 Point randompoint = Places.randomPlace();
                 Order order = new Order(randompoint, Order.Sizes.randomSize(), (int) (Math.random() * Priorities.countOfPriorities + 1));  //генерим заказы
                 orderQueue.add(0, order);
                 Collections.sort(orderQueue, new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s", order.getID(), Places.pointStringHashMap.get(randompoint), order.getWeight(), order.getPriority()));
-                Thread.sleep((int) (Math.random() * 1000));      //время через которое поступают заказы
+                Thread.sleep((int) (Math.random() * 500));      //время через которое поступают заказы
             } catch (InterruptedException ignore)    /*NOP*/ {
             }
         }
@@ -49,7 +49,7 @@ public class Generator implements Runnable {
         @Override
         public void generateOrders() {
             try {
-                //small count of orders
+                //small number of orders
                 Point randompoint = Places.randomPlace();
                 Order order = new Order(randompoint, Order.Sizes.randomSize(), (int) (Math.random() * Priorities.countOfPriorities + 1));  //генерим заказы
                 orderQueue.add(0, order);

@@ -10,13 +10,10 @@ public class Core {
     public static TestClass repainting;
     public static int finish = 0;
     public static int mapVersionByWalls=0;
-    private static final int numberOfRobots = 5;
 
     public static void main(String[] args) throws InterruptedException, NoWayException {
         repainting = new TestClass();  //подключаем модуль отрисовки формы и АОП
-        /*for (int i = 0;i<numberOfRobots;i++){
-
-        } */
+        new SupportGUI();
         LightRobot lightRobot1 = new LightRobot(1);
         CargoRobot cargoRobot2 = new CargoRobot(2);
         LightRobot lightRobot3 = new LightRobot(3);
@@ -29,21 +26,22 @@ public class Core {
         robots.add(lightRobot1);
         robots.add(cargoRobot2);
         robots.add(lightRobot3);
-        //robots.add(cargoRobot4);
+        robots.add(cargoRobot4);
         robot1.start();
         robot2.start();
         robot3.start();
-        //robot4.start();
+        robot4.start();
         generator.start();
-        makeUnforseenWalls();
-        Thread.sleep(20000);   //общее время работы программы
+        //makeUnforseenWalls();
+        Thread.sleep(15000);   //общее время работы программы
         isStopped = true;
         //while(Core.finish!=3){} //не работает!!!!
         System.out.println("Остановка модели...");
+        Thread.sleep(10000);
         System.out.println(String.format("Выполнено заказов %s, потенциальных столкновений %s", Generator.countOfCompleteOrders, Generator.PotentialCollisions));
     }
 
-    private static void makeUnforseenWalls() throws InterruptedException {
+    public static void makeUnforseenWalls() throws InterruptedException {
          int wallCount = 4;
          int zoneCost = 2;
         Thread.sleep(4500);
@@ -51,9 +49,13 @@ public class Core {
         Thread.sleep(5000);
         makeFromTo(140,160,90,130,2);
         Thread.sleep(5000);
+        //makeFromTo(96,128,160,222,1);
+        makeFromTo(160,192,160,192,2);
+        Thread.sleep(3000);
         makeFromTo(160,180,140,192,1);
         Thread.sleep(5000);
         makeFromTo(140,160,90,130,1);
+
 
     }
     private static void makeFromTo(int xFrom, int xTo, int yFrom, int yTo,int zoneCost){
@@ -64,6 +66,7 @@ public class Core {
                 else
                 DeicstraArea.getInstance().getCell(i, j).setColor(Color.WHITE);
                 DeicstraArea.getInstance().getCell(i, j).setCost(zoneCost);
+                Core.repainting.getCellsCosts()[i][j]=zoneCost;
             }
         mapVersionByWalls++;
     }

@@ -8,8 +8,7 @@ import java.util.Random;
 //import java.lang.*;
 
 public class TestClass extends JFrame implements WindowListener {
-
-    private JPanel panel1;
+    private JPanel panel2;
 
     /**
      * Creates a new instance of TestClass
@@ -18,34 +17,21 @@ public class TestClass extends JFrame implements WindowListener {
         super();
 
         addWindowListener(this);
-        setSize(600, 600);
+        setSize(900, 600);
 
-        panel1 = new JPanel() {
+        panel2 = new JPanel() {
             public void paintComponent(Graphics g) {
                 DeicstraArea.getInstance().paint(g);
             }
+
         };
 
+        getContentPane().add(panel2);
 
-        getContentPane().add(panel1);
         createArea();
         createZone();
         DeicstraArea tempA = DeicstraArea.getInstance();  //вся площадь
         tempA.makeArea(this.cellsCosts);
-
-        //region Задание начальных и конечных точек
-        CustomCell StartPoint = tempA.getCell((int) Places.STARTPOINT.getX(), (int) Places.STARTPOINT.getY());
-        CustomCell PointA = tempA.getCell((int) Places.POINTA.getX(), (int) Places.POINTA.getY());
-        CustomCell PointB = tempA.getCell((int) Places.POINTB.getX(), (int) Places.POINTB.getY());
-        CustomCell PointC = tempA.getCell((int) Places.POINTC.getX(), (int) Places.POINTC.getY());
-        StartPoint.setColor(Color.CYAN);
-        PointA.setColor(Color.BLACK);
-        PointB.setColor(Color.BLACK);
-        PointC.setColor(Color.BLACK);
-        //endregion
-
-
-//
 
         show();
     }
@@ -118,5 +104,6 @@ public class TestClass extends JFrame implements WindowListener {
     }
 
     private int[][] cellsCosts = new int[width][heigth];
+
 }
 
