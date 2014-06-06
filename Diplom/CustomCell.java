@@ -16,14 +16,10 @@ public class CustomCell {
     public CustomCell(int cost, int x, int y) {
         this.Cost = Math.abs(cost);
         this.setColor(new Color(255, 255, 255));     //цвет фона
-        if (cost == 2) {
+        if (cost == TestClass.getBlackZoneCost()) {
             this.setColor(java.awt.Color.BLACK);
         }
-        if (cost < 0) {
-            this.Passableness = false;
-        } else {
-            this.Passableness = true;
-        }
+        this.Passableness = cost >= 0;
         this.setPosition(x, y);
 
 
@@ -46,16 +42,6 @@ public class CustomCell {
      */
     public boolean isPassable() {
         return this.Passableness;
-    }
-
-    /**
-     * Метод устанавливает проходимость клетки
-     *
-     * @param Passableness - клетка проходима
-     *             false - клетка не проходима
-     */
-    public void setPassableness(boolean Passableness) {
-        this.Passableness = Passableness;
     }
 
     //Положение клетки

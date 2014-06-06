@@ -15,7 +15,7 @@ public enum Places {
     public static final Point POINTA = DeicstraArea.getInstance().getCell(width - 40, 2).getPosition();
     public static final Point POINTB = DeicstraArea.getInstance().getCell(width - 50, width - 100).getPosition();
     public static final Point POINTC = DeicstraArea.getInstance().getCell(width - 150, heigth - 200).getPosition();
-    public static final Point POINTD = DeicstraArea.getInstance().getCell(width - 20, heigth - 35).getPosition();
+    static final Point POINTD = DeicstraArea.getInstance().getCell(width - 20, heigth - 35).getPosition();
     public static final HashMap<Point, String> pointStringHashMap = new HashMap<Point, String>();
 
 
@@ -23,7 +23,7 @@ public enum Places {
 
     static {
         pointStringHashMap.put(POINTA, "Точка А");
-        pointStringHashMap.put(POINTB, "Точка Б");
+        pointStringHashMap.put(POINTB, "Точка B");
         pointStringHashMap.put(POINTC, "Точка С");
         pointStringHashMap.put(POINTD, "Точка D");
         pointStringHashMap.put(STARTPOINT, "Склад");

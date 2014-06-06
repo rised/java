@@ -10,8 +10,10 @@ public class Generator implements Runnable {
 
     private static final Generator ourInstance = new Generator();
     private volatile ArrayList<Order> orderQueue = new ArrayList<Order>();
-    protected static int countOfCompleteOrders;
-    protected static int PotentialCollisions;
+    static int countOfCompleteOrders;
+    static int countOfInputOrders;
+    static int PotentialCollisions;
+    private double timeForGeneratorA = 500;
 
     public static Generator getInstance() {
         return ourInstance;
@@ -39,7 +41,8 @@ public class Generator implements Runnable {
                 orderQueue.add(0, order);
                 Collections.sort(orderQueue, new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s", order.getID(), Places.pointStringHashMap.get(randompoint), order.getWeight(), order.getPriority()));
-                Thread.sleep((int) (Math.random() * 500));      //время через которое поступают заказы
+                Thread.sleep((int) (Math.random() * timeForGeneratorA));      //время через которое поступают заказы
+                countOfInputOrders++;
             } catch (InterruptedException ignore)    /*NOP*/ {
             }
         }
@@ -53,9 +56,10 @@ public class Generator implements Runnable {
                 Point randompoint = Places.randomPlace();
                 Order order = new Order(randompoint, Order.Sizes.randomSize(), (int) (Math.random() * Priorities.countOfPriorities + 1));  //генерим заказы
                 orderQueue.add(0, order);
-                Collections.sort(orderQueue, new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
+                Collections.sort(orderQueue, new SortedByPriority());
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s", order.getID(), Places.pointStringHashMap.get(randompoint), order.getWeight(), order.getPriority()));
-                Thread.sleep((int) (Math.random() * 10000));      //время через которое поступают заказы
+                Thread.sleep((int) (Math.random() * timeForGeneratorA*10));      //время через которое поступают заказы
+                countOfInputOrders++;
             } catch (InterruptedException ignore)    /*NOP*/ {
             }
         }
@@ -70,9 +74,10 @@ public class Generator implements Runnable {
                 Point randompoint = Places.randomPlace();
                 Order order = new Order(randompoint, 10, (int) (Math.random() * Priorities.countOfPriorities + 1));  //генерим заказы
                 orderQueue.add(0, order);
-                Collections.sort(orderQueue, new SortedByPriority());  //после каждого добавления очередь сортируется по приоритетам
+                Collections.sort(orderQueue, new SortedByPriority());
                 System.out.println(String.format("Поступил заказ номер %s, точка назначения: %s , вес %s, приоритет %s", order.getID(), Places.pointStringHashMap.get(randompoint), order.getWeight(), order.getPriority()));
-                Thread.sleep((int) (Math.random() * 1000));      //время через которое поступают заказы
+                Thread.sleep((int) (Math.random() * 1000));
+                countOfInputOrders++;
             } catch (InterruptedException ignore)    /*NOP*/ {
             }
         }

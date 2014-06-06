@@ -1,8 +1,8 @@
 package Diplom;
 
 import java.awt.*;
-import java.util.*;
-import java.lang.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class DeicstraArea {
 
@@ -190,12 +190,21 @@ public class DeicstraArea {
 
         Iterator tempI = tempAL.iterator();
         DeicstraCell tempDC;
+        for (int i = 0; i < tempAL.size(); i++) {
+            tempDC = (DeicstraCell) tempAL.get(i);
+            if ((tempDC.getStatus() == tempDC.STATUS_NOVISITED)
+                    )
+                outAL.add(tempDC);
+
+        }
+        /*
         while (tempI.hasNext()) {
             tempDC = (DeicstraCell) tempI.next();
             if ((tempDC.getStatus() == tempDC.STATUS_NOVISITED)
                     )
                 outAL.add(tempDC);
         }
+        */
         return outAL;
     }
 
@@ -246,58 +255,90 @@ public class DeicstraArea {
         BarrierList.add(STARTCELL);
         DeicstraCell minCC;
 
-        while (!BarrierList.isEmpty()) {
-//Среди всех граничных точек находим Клетку1 - клетку с минимальной суммой оценки
-            minCC = findOfBorderList(BarrierList);
-//если таковая точка не найдена - пути быть не может
-            if (minCC == null) {
-                NoWayException e = new NoWayException("Way can not be finned!");
-                throw e;
-            }
-//Для найденной клетки с минимальной суммой оценки рассматриваем соседей
-            ArrayList<DeicstraCell> tempAL = getCleanEnvironment(minCC, tempArea);
-//Если соседей нет
-            if ((tempAL == null) || (tempAL.isEmpty())) {
-//Пометить найденную клетку как отброшенную
-                minCC.setStatus(minCC.STATUS_OFFCAST);
-//и удалить ее из списка граничных точек
-                BarrierList.remove(minCC);
-//Перейти к новому поиску точки с минимальной суммой оценки
-//из списка граничных точек
-                continue;
-            }
-//Если сосед имеет статус непосещенного,
-//а все клетки возвращенные методом getCleanEnvironment()
-//таковыми и являються, то для каждого из них
-            for (DeicstraCell dCell : tempAL) {
-//то мы обозначаеми его (соседа) как граничную клетку,
-                dCell.setStatus(dCell.STATUS_BARRIER);
-//добавляем в список граничных точек
-                BarrierList.add(dCell);
-//и указываем Клетку1 как предыдущую для него.
-                dCell.setPredecessor(minCC);
-//Оцениваем соседей как сумму предшественника и стоимости самого соседа
-                dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
-//Находим оставшийся путь как длину вектора до финиша
-                dCell.setResiduaryWay(Math.sqrt((double)
-                        (dCell.getX() - finishCell.getX()) * (dCell.getX() - finishCell.getX())
-                        + (dCell.getY() - finishCell.getY()) * (dCell.getY() - finishCell.getY())));
-//Если сосед - это финиш, то путь найден
-                if (dCell.equals(FINISHCELL)) {
-//System.out.println("WayFinded");
-//Трассировка пути
-                    while (!minCC.getPredecessor().equals(STARTCELL)) {
-                        retAL.add(minCC.getParentCell().getPosition());
-                        minCC = minCC.getPredecessor();
-                    }
-                    retAL.add(minCC.getParentCell().getPosition());
-                    return retAL;
-                }
-            }
-//Рассматриваемую Клетку помечаем как отброшенную.
-            minCC.setStatus(minCC.STATUS_OFFCAST);
-//удаляем из списка граничных точек
-            BarrierList.remove(minCC);
+        while (!BarrierList.isEmpty())
+        {
+                //Среди всех граничных точек находим Клетку1 - клетку с минимальной суммой оценки
+                            minCC = findOfBorderList(BarrierList);
+                //если таковая точка не найдена - пути быть не может
+                            if (minCC == null) {
+                                NoWayException e = new NoWayException("Way can not be found!");
+                                throw e;
+                            }
+                //Для найденной клетки с минимальной суммой оценки рассматриваем соседей
+                            ArrayList<DeicstraCell> tempAL = getCleanEnvironment(minCC, tempArea);
+                //Если соседей нет
+                            if ((tempAL == null) || (tempAL.isEmpty())) {
+                //Пометить найденную клетку как отброшенную
+                                minCC.setStatus(minCC.STATUS_OFFCAST);
+                //и удалить ее из списка граничных точек
+                                BarrierList.remove(minCC);
+                //Перейти к новому поиску точки с минимальной суммой оценки
+                //из списка граничных точек
+                                continue;         // типо GoTo в начало
+                            }
+                //Если сосед имеет статус непосещенного,
+                //а все клетки возвращенные методом getCleanEnvironment()
+                //таковыми и являються, то для каждого из них
+            //проход по всем точкам из граничных точек в tempAL
+                                for (int i = 0; i < tempAL.size(); i++) {
+                                    DeicstraCell dCell =  tempAL.get(i);
+                //то мы обозначаеми его (соседа) как граничную клетку,
+                                dCell.setStatus(dCell.STATUS_BARRIER);
+                //добавляем в список граничных точек
+                                BarrierList.add(dCell);
+                //и указываем Клетку1 как предыдущую для него.
+                                dCell.setPredecessor(minCC);
+                //Оцениваем соседей как сумму предшественника и стоимости самого соседа
+
+
+//Up
+                                    if (minCC.getY() != 0 && dCell.getX()==minCC.getX() && dCell.getY()==minCC.getY()-1) dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
+//Right
+                                    if (minCC.getX() != this.width - 1 && dCell.getX()==minCC.getX()+1 && dCell.getY()==minCC.getY())  dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
+//Down
+                                    if (minCC.getY() != this.heigth - 1 && dCell.getX()==minCC.getX() && dCell.getY()==minCC.getY()+1) dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
+//Left
+                                    if (minCC.getX() != 0 && dCell.getX()==minCC.getX()-1 && dCell.getY()==minCC.getY()) dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
+
+//Left-Up
+                                        if (((minCC.getX() != 0) && (minCC.getY() != 0)) && dCell.getX()==minCC.getX()-1 && dCell.getY()==minCC.getY()-1)  dCell.setPassedWay(minCC.getPassedWay() + Math.sqrt(2)*dCell.getCoast());
+//Down-Left
+                                        if (((minCC.getY() != this.heigth - 1) && (minCC.getX() != 0))&& dCell.getX()==minCC.getX()-1 && dCell.getY()==minCC.getY()+1)  dCell.setPassedWay(minCC.getPassedWay() + Math.sqrt(2)*dCell.getCoast());
+//Right-Down
+                                        if (((minCC.getX() != this.width - 1) && (minCC.getY() != this.heigth - 1)) && dCell.getX()==minCC.getX()+1 && dCell.getY()==minCC.getY()+1)  dCell.setPassedWay(minCC.getPassedWay() + Math.sqrt(2)*dCell.getCoast());
+//Up-Right
+                                        if (((minCC.getY() != 0) && (minCC.getX() != this.width - 1)) && dCell.getX()==minCC.getX()+1 && dCell.getY()==minCC.getY()-1)  dCell.setPassedWay(minCC.getPassedWay() + Math.sqrt(2)*dCell.getCoast());
+
+
+
+
+
+                                       /*
+                                    if (i<4)
+                                dCell.setPassedWay(minCC.getPassedWay() + Math.sqrt(2)*dCell.getCoast());
+                                    else {
+                                        dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
+                                    }   */
+                //Находим оставшийся путь как длину вектора до финиша
+                                dCell.setResiduaryWay(Math.sqrt((double)
+                                        (dCell.getX() - finishCell.getX()) * (dCell.getX() - finishCell.getX())
+                                        + (dCell.getY() - finishCell.getY()) * (dCell.getY() - finishCell.getY())));    //видимо, это эвристическая оценка расстояния до цели
+                //Если сосед - это финиш, то путь найден
+                                if (dCell.equals(FINISHCELL)) {
+                //System.out.println("Way is found");
+                //Трассировка пути
+                                    while (!minCC.getPredecessor().equals(STARTCELL)) {
+                                        retAL.add(minCC.getParentCell().getPosition());
+                                        minCC = minCC.getPredecessor();
+                                    }
+                                    retAL.add(minCC.getParentCell().getPosition());
+                                    return retAL;
+                                }
+                            }
+                //Рассматриваемую Клетку помечаем как отброшенную.
+                            minCC.setStatus(minCC.STATUS_OFFCAST);
+                //удаляем из списка граничных точек
+                            BarrierList.remove(minCC);
         }
 //если граничных точек больше нет - то путь не найден
 // if (BarrierList.isEmpty()) System.err.println("No Way!");
@@ -412,7 +453,6 @@ public class DeicstraArea {
             if ((p3.y == p2.y) && (p2.x == p1.x) && (p3.y == p1.y + 1) && (p3.x == p2.x + 1)) {
                 if (getCell(p3.x, p1.y).isPassable()) {
                     way.remove(i + 1);
-                    continue;
                 }
 
             }

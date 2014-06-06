@@ -28,7 +28,7 @@ public class DeicstraCell {
 
     //Константы статуса клетки
     final int STATUS_NOVISITED=1; //непосещенная
-    final int STATUS_BORDER=2; //
+    private final int STATUS_BORDER=2; //
     final int STATUS_OFFCAST=3; //отброшенная
     final int STATUS_BARRIER=4; //граничная
 
@@ -51,7 +51,7 @@ public class DeicstraCell {
     public void setResiduaryWay(double ResiduaryWay){
         this.ResiduaryWay = ResiduaryWay;
     }
-    public double getResiduaryWay() {return this.ResiduaryWay;}
+    double getResiduaryWay() {return this.ResiduaryWay;}
 
     //Сумарный путь
     public double getSummaryWay() {
@@ -60,7 +60,7 @@ public class DeicstraCell {
 
     //Положение клетки
     private Point Position = new Point();
-    public Point getPosition(){
+    Point getPosition(){
         return this.ParentCell.getPosition();
     }
 

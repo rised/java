@@ -2,6 +2,7 @@ package Diplom;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 public class SupportGUI extends JFrame implements WindowListener {
 
@@ -12,33 +13,52 @@ public class SupportGUI extends JFrame implements WindowListener {
     private JButton btnclose;
     private JTextField currentSpeed;
     private JButton addLight;
-    private JPanel panel;
-    private JLabel numberOfLight=new JLabel();
-    private JLabel numberOfCargo = new JLabel();
-    public static int startNumberOfRobots = 4;
-    public static int numberOfLightRobots = 2;
-    public static int numberOfCargoRobots = 2;
+    private JButton showCountOfComplete;
+    private JButton showInputOrders;
+    private JButton decreaseCapacity;
+    private JButton increaseCapacity;
+    private final JLabel completeOrders = new JLabel();
+    private final JLabel numberOfLight=new JLabel();
+    private final JLabel numberOfCargo = new JLabel();
+    private final JLabel numberOfInputOrders = new JLabel();
+    private static int startNumberOfRobots = 4;
+    private static int numberOfLightRobots = 2;
+    private static int numberOfCargoRobots = 2;
 
     public  SupportGUI(){
-        super();
+        super("Managing");
 
         addWindowListener(this);
-        setSize(600, 600);
-        show();
+        setSize(900, 200);
+        setVisible(true);
 
-        panel=new JPanel();
+        JPanel panel = new JPanel();
+
+        decreaseCapacity.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        increaseCapacity.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
         btnclose.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
         });
-        getContentPane().add(panel);
         increaseSpeed.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Robot.setSpeed(Robot.getSpeed() - 1);
-                currentSpeed.setText(String.valueOf((double) (100 / Robot.getSpeed())));
+                currentSpeed.setText("Текущая скорость: " + String.valueOf((double) (100 / Robot.getSpeed())));
             }
         });
         decreaseSpeed.addActionListener(new ActionListener() {
@@ -51,7 +71,12 @@ public class SupportGUI extends JFrame implements WindowListener {
         addCargo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Core.CargoRobot cargoRobot1 = new Core.CargoRobot(startNumberOfRobots);
+                Core.CargoRobot cargoRobot1 = null;
+                try {
+                    cargoRobot1 = new Core.CargoRobot(startNumberOfRobots);
+                } catch (IOException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
                 Thread robot1 = new Thread(cargoRobot1);
                 Core.robots.add(cargoRobot1);
                 robot1.start();
@@ -64,7 +89,12 @@ public class SupportGUI extends JFrame implements WindowListener {
         addLight.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Core.LightRobot lightRobot1 = new Core.LightRobot(startNumberOfRobots);
+                Core.LightRobot lightRobot1 = null;
+                try {
+                    lightRobot1 = new Core.LightRobot(startNumberOfRobots);
+                } catch (IOException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
                 Thread robot1 = new Thread(lightRobot1);
                 Core.robots.add(lightRobot1);
                 robot1.start();
@@ -72,9 +102,23 @@ public class SupportGUI extends JFrame implements WindowListener {
                 System.out.println("Добавлен легковой робот " + startNumberOfRobots);
                 numberOfLightRobots++;
                 numberOfLight.setText("Легковых роботов: " + String.valueOf(numberOfLightRobots));
+
             }
         });
+        showCountOfComplete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                completeOrders.setText("Заказов выполнено: " + String.valueOf(Generator.countOfCompleteOrders));
+            }
+        });
+        showInputOrders.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                numberOfInputOrders.setText("Заказов поступило: " + String.valueOf(Generator.countOfInputOrders));
 
+            }
+        });
+        panel.add(showCountOfComplete);
         panel.add(btnclose);
         panel.add(increaseSpeed);
         panel.add(currentSpeed);
@@ -83,6 +127,15 @@ public class SupportGUI extends JFrame implements WindowListener {
         panel.add(addCargo);
         panel.add(numberOfLight);
         panel.add(numberOfCargo);
+        panel.add(completeOrders);
+        panel.add(showInputOrders);
+        panel.add(numberOfInputOrders);
+        panel.add(decreaseCapacity);
+        panel.add(increaseCapacity);
+
+
+        getContentPane().add(panel);
+        show();
     }
     @Override
     public void windowOpened(WindowEvent e) {

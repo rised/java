@@ -4,14 +4,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Order {
+class Order {
 
-    private int weight;
-    private int priority;
+    private final int weight;
+    private final int priority;
     private static int totalOrderCount;
-    private int ID;
+    private final int ID;
     private double completetime;
-    private Point DestinationPoint;
+    private final Point DestinationPoint;
 
     public Order(Point destinationPoint, int weight, int priority) {
         this.DestinationPoint = destinationPoint;
@@ -44,7 +44,7 @@ public class Order {
 
     enum Sizes {
         ;
-        private static ArrayList<Integer> VALUES = new ArrayList<Integer>();
+        private static final ArrayList<Integer> VALUES = new ArrayList<Integer>();
 
         static {
 

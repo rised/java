@@ -10,7 +10,7 @@ public abstract class Robot implements Runnable {
     //region Типы исполнения
 
     public interface RobotExecutionType {
-        public void pickOrderByQueue(ArrayList<Order> queue);
+        public void pickOrderByQueue();
     }
 
     public class RobotExecutionA implements RobotExecutionType {    /* Робот просматривает всю очередь, и выбирает себе наиболее подходящий по весу - грузовой берет более тяжелый, легковой берет более легкий.
@@ -19,7 +19,7 @@ public abstract class Robot implements Runnable {
     */
 
         @Override
-        public void pickOrderByQueue(ArrayList<Order> queue) {
+        public void pickOrderByQueue() {
             for (Order order : queue) {
                 if (getCAPACITY() >= order.getWeight() && order.getWeight() > Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой")) {
                     pickOrderFromTopQueue(order);
@@ -35,7 +35,7 @@ public abstract class Robot implements Runnable {
 
     public class RobotExecutionB implements RobotExecutionType {
         @Override
-        public void pickOrderByQueue(ArrayList<Order> queue)
+        public void pickOrderByQueue()
             /*FIFO+robottype*/ {
 
             ArrayList<Robot> freeRobots = new ArrayList<Robot>();
@@ -60,12 +60,14 @@ public abstract class Robot implements Runnable {
 
                     for (Robot freeRobot : freeRobots) {
                         if (freeRobot.getCAPACITY() >= queue.get(j).getWeight() && queue.get(j).getWeight() > Core.LightRobot.MAX_CAPACITY && freeRobot.getType().equals("Грузовой")) {
-                            System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ.", getID(), freeRobot.getID()));
+                            if (getID()!=freeRobot.getID())
+                                System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ %s.", getID(), freeRobot.getID(), queue.get(j).getID()));
                             freeRobot.pickOrderFromTopQueue(queue.get(j));
                             j--;
 
                         } else if (freeRobot.getCAPACITY() >= queue.get(j).getWeight() && queue.get(j).getWeight() <= Core.LightRobot.MAX_CAPACITY && freeRobot.getType().equals("Легковой")) {
-                            System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ.",getID(),freeRobot.getID()));
+                            if (getID()!=freeRobot.getID())
+                            System.out.println(String.format("Робот %s передает сообщение: Робот %s бери заказ %s",getID(),freeRobot.getID(),queue.get(j).getID()));
                             freeRobot.pickOrderFromTopQueue(queue.get(j));
                             j--;
                         }
@@ -79,7 +81,7 @@ public abstract class Robot implements Runnable {
 
     public class RobotExecutionC implements RobotExecutionType {
         @Override
-        public void pickOrderByQueue(ArrayList<Order> queue)
+        public void pickOrderByQueue()
             /* запускать с GeneratorA
             *Оптимизация-2 Роботы берут из очереди несколько заказов для разных получателей   (+развозить должны по задаче о комивояжере)
             *робот берет из очереди несколько заказов, Максимально загружаясь, втупую пытается взять подряд топ очереди
@@ -100,6 +102,7 @@ public abstract class Robot implements Runnable {
      * @param multipath - список точек, которые нужно посетить роботу в случае если он взял больше одного заказа.
      */
     private final int ID;
+    private Image robotImage;
     private final String type;
     private final Point StoragePoint = DeicstraArea.getInstance().getCell((int) Places.STARTPOINT.getX(), (int) Places.STARTPOINT.getY()).getPosition();
     private int capacity;
@@ -109,18 +112,18 @@ public abstract class Robot implements Runnable {
     private static final ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
     private Point EndPoint;
     private Point CurrentPoint = StoragePoint;
-    private ArrayList<Order> orders = new ArrayList<Order>();
+    private final ArrayList<Order> orders = new ArrayList<Order>();
     private ArrayList<Point> path;
     private ArrayList<Point> multipath;
     private int mapVersion=1;
     private static int speed = 15;
-
-    public Robot(int ID, int CAPACITY, String type, int energyPerMove, int energy) {
+    public Robot(int ID, int CAPACITY, String type, int energyPerMove, int energy, Image robotImage) {
         this.ID = ID;
         this.capacity = CAPACITY;
         this.type = type;
         this.energy = energy;
         this.energyRatePerMove = energyPerMove;
+        this.robotImage=robotImage;
     }
 
     //region Сеттеры
@@ -150,12 +153,14 @@ public abstract class Robot implements Runnable {
     }
     //endregion
     //region Геттеры
-
+    public Image getRobotImage() {
+        return robotImage;
+    }
     int getEnergy() {
         return energy;
     }
 
-    private Point getCurrentPoint() {
+    protected Point getCurrentPoint() {
         return CurrentPoint;
     }
 
@@ -193,14 +198,14 @@ public abstract class Robot implements Runnable {
 
             //region Если робот свободен и на находится на складе, то взять заказ
             if (isFree())   // в EXECB один поток может поменять состояние другого, поэтому это условие очень удачно работает здесь
-            { // одновременно доступ к очереди имеет только один робот
+            { // одновременно доступ к очереди имеет только один робот - ложь
                 synchronized (queue) {
                     if (!queue.isEmpty() && getCurrentPoint().equals(getStoragePoint())) {
                         try {
                             Thread.sleep(1000); // задержка на взятие заказа
-                            EXECtype.pickOrderByQueue(queue);
+                            EXECtype.pickOrderByQueue();
                         } catch (Exception e) {
-                            System.out.println("pickorder: " + e.getCause());
+                           // System.out.println("pickorder: " + e.getCause());
                         }
 
                     }
@@ -216,7 +221,7 @@ public abstract class Robot implements Runnable {
                     //moveToDestinationWithOrder(EndPoint);
                     moveToDestinationWithOrder(multipath);
                 } catch (Exception e) {
-                    System.out.println("moveToDest" + e.getMessage());
+                   // System.out.println("moveToDest" + e.getMessage());
                 }
                 //endregion
                 //region Едет пустой домой
@@ -224,7 +229,7 @@ public abstract class Robot implements Runnable {
                     if (!getCurrentPoint().equals(getStoragePoint()))
                         moveToStorage();
                 } catch (Exception e) {
-                    System.out.println("simplemove:" + e.getMessage());
+                   // System.out.println("simplemove:" + e.getMessage());
                 }
                 //endregion
             }
@@ -327,7 +332,7 @@ public abstract class Robot implements Runnable {
         Color headColor = Colors.randomColor();
         for (Point point : path) {
             if (Core.mapVersionByWalls < mapVersion) {
-                if (Core.repainting.getCellsCosts()[point.x][point.y] == 2) {
+                if (Core.repainting.getCellsCosts()[point.x][point.y] == TestClass.blackZoneCost) {
                     System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
                     Thread.sleep((long)(speed/0.75));
                     System.out.println(String.format("Робот %s продолжает движение", getID()));
@@ -336,18 +341,18 @@ public abstract class Robot implements Runnable {
                 setCurrentPoint(point);
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
                 Core.repainting.repaint();
-                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(2);    //клетка стала занятой
-                Core.repainting.getCellsCosts()[point.x][point.y] = 2;
+                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(TestClass.blackZoneCost);    //клетка стала занятой
+                Core.repainting.getCellsCosts()[point.x][point.y] = TestClass.blackZoneCost;
                 Thread.sleep(speed);
                 energy = getEnergy() - energyRatePerMove;
-                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(1);   // освободилась
-                Core.repainting.getCellsCosts()[point.x][point.y] = 1;
+                DeicstraArea.getInstance().getCell(point.x, point.y).setCost(TestClass.whiteZoneCost);   // освободилась
+                Core.repainting.getCellsCosts()[point.x][point.y] = TestClass.whiteZoneCost;
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
             }
             else  {
                 mapVersion++;
-                System.out.println("Зафиксировано непредвиденное препятсвие на маршруте следования...");
-                paintPath(DeicstraArea.getInstance().findWay(EndPoint,CurrentPoint));
+                System.out.println("Зафиксировано непредвиденное препятствие на маршруте следования...");
+                paintPath(DeicstraArea.getInstance().findWay(EndPoint, CurrentPoint));
 
             break;
             }
