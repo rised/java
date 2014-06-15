@@ -18,7 +18,7 @@ public class Core {
     public static TestClass repainting;
     public static int finish = 0;
     public static int mapVersionByWalls=0;
-    private static final int workTime = 30000;
+    private static final int workTime = 45000;
 
     public static void main(String[] args) throws InterruptedException, NoWayException, IOException {
         repainting = new TestClass();  //подключаем модуль отрисовки формы и АОП
@@ -41,7 +41,7 @@ public class Core {
         robot3.start();
         robot4.start();
         generator.start();
-       makeUnforseenWalls();
+        makeUnforseenWalls();
         Thread.sleep(workTime);   //общее время работы программы
         isStopped = true;
         System.out.println("Остановка модели...");

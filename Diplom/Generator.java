@@ -9,7 +9,7 @@ public class Generator implements Runnable {
     private final GeneratorType EXECtype = new GeneratorA();   // здесь задаем тип генератора, который будем использовать
 
     private static final Generator ourInstance = new Generator();
-    private volatile ArrayList<Order> orderQueue = new ArrayList<Order>();
+    private static volatile ArrayList<Order> orderQueue = new ArrayList<Order>();
     static int countOfCompleteOrders;
     static int countOfInputOrders;
     static int PotentialCollisions;
@@ -19,7 +19,7 @@ public class Generator implements Runnable {
         return ourInstance;
     }
 
-    public synchronized ArrayList<Order> getOrderQueue() {
+    public static synchronized ArrayList<Order> getOrderQueue() {
         return orderQueue;
     }
 

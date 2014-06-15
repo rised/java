@@ -23,7 +23,7 @@ public abstract class Robot implements Runnable {
             for (Order order : queue) {
                 if (getCAPACITY() >= order.getWeight() && order.getWeight() > Core.LightRobot.MAX_CAPACITY && getType().equals("Грузовой")) {
                     pickOrderFromTopQueue(order);
-                    break;
+                   break;
                 } else if (getCAPACITY() >= order.getWeight() && order.getWeight() <= Core.LightRobot.MAX_CAPACITY && getType().equals("Легковой")) {
                     pickOrderFromTopQueue(order);
                     break;
@@ -109,7 +109,7 @@ public abstract class Robot implements Runnable {
     private final int energyRatePerMove;
     private int energy;
     private boolean free = true;
-    private static final ArrayList<Order> queue = Generator.getInstance().getOrderQueue();
+    private static volatile ArrayList<Order> queue = Generator.getOrderQueue();
     private Point EndPoint;
     private Point CurrentPoint = StoragePoint;
     private final ArrayList<Order> orders = new ArrayList<Order>();
@@ -326,18 +326,48 @@ public abstract class Robot implements Runnable {
         }
     }
 
+    public Point getEndPoint() {
+        return EndPoint;
+    }
+
     //endregion
     void paintPath(ArrayList<Point> path) throws InterruptedException, NoWayException {
         Color bodyColor = Colors.randomColor();
         Color headColor = Colors.randomColor();
+
         for (Point point : path) {
+            int decrementX, decrementY;
             if (Core.mapVersionByWalls < mapVersion) {
                 if (Core.repainting.getCellsCosts()[point.x][point.y] == TestClass.blackZoneCost) {
                     System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
+                   /*
+                   //возможная реализация избежания столкновений: всего может быть 8 различных ситуаций, (по аналогии со звездой в DeicstraArea.
+                   )  Для этих ситуаций будут различные декременты по каждой из осей - 1, 0, -1. Тут надо дописывать код.
+                    if (this.getEndPoint().getX()-point.getX()>0) decrementX=1;
+                    else decrementX=-1;
+                    if (this.getEndPoint().getY()-point.getY()>0) decrementY=1;
+                    else decrementY=-1;
+                    if (this.getEndPoint().getX()-point.getX()==0) decrementX=0;
+                    else decrementX=-1;
+                    if (this.getEndPoint().getY()-point.getY()==0) decrementY=0;
+                    else decrementY=-1;
+                    Point pointGoTo = new Point(point.x+decrementX,point.y+decrementY);
+                    setCurrentPoint(pointGoTo);*/
                     Thread.sleep((long)(speed/0.75));
                     System.out.println(String.format("Робот %s продолжает движение", getID()));
                     Generator.PotentialCollisions++;
+                    /*
+                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setColor(bodyColor);
+                    Core.repainting.repaint();
+                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setCost(TestClass.blackZoneCost);    //клетка стала занятой
+                    Core.repainting.getCellsCosts()[pointGoTo.x][pointGoTo.y] = TestClass.blackZoneCost;
+                    Thread.sleep(speed);
+                    energy = getEnergy() - energyRatePerMove;
+                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setCost(TestClass.whiteZoneCost);   // освободилась
+                    Core.repainting.getCellsCosts()[pointGoTo.x][pointGoTo.y] = TestClass.whiteZoneCost;
+                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setColor(headColor);  */
                 }
+                else {
                 setCurrentPoint(point);
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(bodyColor);
                 Core.repainting.repaint();
@@ -348,6 +378,7 @@ public abstract class Robot implements Runnable {
                 DeicstraArea.getInstance().getCell(point.x, point.y).setCost(TestClass.whiteZoneCost);   // освободилась
                 Core.repainting.getCellsCosts()[point.x][point.y] = TestClass.whiteZoneCost;
                 DeicstraArea.getInstance().getCell(point.x, point.y).setColor(headColor);
+                }
             }
             else  {
                 mapVersion++;

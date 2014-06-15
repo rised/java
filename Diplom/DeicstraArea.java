@@ -124,6 +124,7 @@ public class DeicstraArea {
             if ((x != this.width - 1) && (y != this.heigth - 1)) tempAL.add(getCell(x + 1, y + 1));
 //Up-Right
             if ((y != 0) && (x != this.width - 1)) tempAL.add(getCell(x + 1, y - 1));
+
         }
         return tempAL;
     }
@@ -290,7 +291,7 @@ public class DeicstraArea {
                                 dCell.setPredecessor(minCC);
                 //Оцениваем соседей как сумму предшественника и стоимости самого соседа
 
-
+                        // Для каждой соседней точки устанавливаем значение целевой функции. Если соседи диагональные, то их собственная стоимость как клетки, корень из двух. Для остальных единица.
 //Up
                                     if (minCC.getY() != 0 && dCell.getX()==minCC.getX() && dCell.getY()==minCC.getY()-1) dCell.setPassedWay(minCC.getPassedWay() + dCell.getCoast());
 //Right
@@ -322,7 +323,7 @@ public class DeicstraArea {
                 //Находим оставшийся путь как длину вектора до финиша
                                 dCell.setResiduaryWay(Math.sqrt((double)
                                         (dCell.getX() - finishCell.getX()) * (dCell.getX() - finishCell.getX())
-                                        + (dCell.getY() - finishCell.getY()) * (dCell.getY() - finishCell.getY())));    //видимо, это эвристическая оценка расстояния до цели
+                                        + (dCell.getY() - finishCell.getY()) * (dCell.getY() - finishCell.getY())));    //эвристическая оценка расстояния до цели
                 //Если сосед - это финиш, то путь найден
                                 if (dCell.equals(FINISHCELL)) {
                 //System.out.println("Way is found");

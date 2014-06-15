@@ -124,6 +124,7 @@ public class TestClass extends JFrame implements WindowListener {
             for (int j = 0; j < heigth; j++) {
                 this.cellsCosts[i][j] = 1;
                 if (rand.nextInt(100) < 0) this.cellsCosts[i][j] = -this.cellsCosts[i][j];
+
             }
         }
     }
