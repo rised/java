@@ -340,9 +340,25 @@ public abstract class Robot implements Runnable {
             if (Core.mapVersionByWalls < mapVersion) {
                 if (Core.repainting.getCellsCosts()[point.x][point.y] == TestClass.blackZoneCost) {
                     System.out.println(String.format("Потенциальное столкновение. Робот %s ждет", getID()));
-                   /*
+
                    //возможная реализация избежания столкновений: всего может быть 8 различных ситуаций, (по аналогии со звездой в DeicstraArea.
-                   )  Для этих ситуаций будут различные декременты по каждой из осей - 1, 0, -1. Тут надо дописывать код.
+                //   )  Для этих ситуаций будут различные декременты по каждой из осей - 1, 0, -1. Тут надо дописывать код.
+
+                    /*
+                    *   1) х2>x1 y2>y1
+                        decrx+1 decry=0, decrx=0 decry=1
+                        2) x2<x1 y2>y1
+                        decrx=-1 decry =0, decrx=0 decry =1
+                        3) x2<x1 y2<y1 decrx=-1 decry=0, decrx=0 decry=-1
+                        4) x2>x1 y2<y1 decrx=1 decry=0, decrx=0 decry=-1
+                        5) x2=x1 y2>y1 decrx=1 decry=1, decrx=-1 decry=1
+                        6) x2=x1 y2<y1 decrx=-1 decry=-1, decrx=1 decry=-1
+                        7) y2=y1 x2>x1 decrx=1 decry=1, decrx=1 decry=-1
+                        8) y2=y1 x2<x1 decrx=-1 decry=1, decrx=-1 decry=-1
+                        Далее из каждых двух точек выбираем первую свободную и отступаем в нее
+                        Если свободную точку не удалось найти, то отступаем на шаг назад, и повторяем весь алгоритм
+                        */
+
                     if (this.getEndPoint().getX()-point.getX()>0) decrementX=1;
                     else decrementX=-1;
                     if (this.getEndPoint().getY()-point.getY()>0) decrementY=1;
@@ -352,11 +368,11 @@ public abstract class Robot implements Runnable {
                     if (this.getEndPoint().getY()-point.getY()==0) decrementY=0;
                     else decrementY=-1;
                     Point pointGoTo = new Point(point.x+decrementX,point.y+decrementY);
-                    setCurrentPoint(pointGoTo);*/
+                    setCurrentPoint(pointGoTo);
                     Thread.sleep((long)(speed/0.75));
                     System.out.println(String.format("Робот %s продолжает движение", getID()));
                     Generator.PotentialCollisions++;
-                    /*
+
                     DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setColor(bodyColor);
                     Core.repainting.repaint();
                     DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setCost(TestClass.blackZoneCost);    //клетка стала занятой
@@ -365,7 +381,7 @@ public abstract class Robot implements Runnable {
                     energy = getEnergy() - energyRatePerMove;
                     DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setCost(TestClass.whiteZoneCost);   // освободилась
                     Core.repainting.getCellsCosts()[pointGoTo.x][pointGoTo.y] = TestClass.whiteZoneCost;
-                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setColor(headColor);  */
+                    DeicstraArea.getInstance().getCell(pointGoTo.x, pointGoTo.y).setColor(headColor);
                 }
                 else {
                 setCurrentPoint(point);

@@ -26,7 +26,7 @@ public class Generator implements Runnable {
     private Generator() {
     }
 
-    //region Типы генераторов
+    //region Типы генераторов    бла бла
     public interface GeneratorType {
         public void generateOrders();
     }
